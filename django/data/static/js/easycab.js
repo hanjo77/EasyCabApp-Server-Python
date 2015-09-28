@@ -41,6 +41,7 @@ var options = {
 	}
 };
 
+var djangoRootPath = "";
 var center = null;
 var map = null;
 var currentPopup;
@@ -49,6 +50,8 @@ var activeMarker = null;
 var markers = {};
 var timeouts = {};
 var database = {};
+var activeMarkerUrl = "/map_marker/img/marker-template-active.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
+var inactiveMarkerUrl = "/map_marker/img/marker-template-inactive.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
 
 function removeMarker(key) {
 	var marker = markers[key];
@@ -59,7 +62,7 @@ function removeMarker(key) {
 		if (key == activeMarker) {
 			activeMarker = null;
 		}
-		marker.setIcon("http://46.101.17.239/marker-png/marker.php?inactive=true&text=" + key);
+		marker.setIcon(inactiveMarkerUrl + key);
 	}
 	$("h3.car" + key).removeClass("active");
 }
@@ -120,12 +123,12 @@ function addMarker(lat, lng, info) {
 	// bounds.extend(pt);
 	if (!markers[data.car]) {
 
-		var icon = new google.maps.MarkerImage("http://46.101.17.239/marker-png/marker.php?text=" + data.car,
+		var icon = new google.maps.MarkerImage(activeMarkerUrl + data.car,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
 		if (!data.time) {
-			icon = new google.maps.MarkerImage("http://46.101.17.239/marker-png/marker.php?inactive=true&text=" + data.car,
+			icon = new google.maps.MarkerImage(inactiveMarkerUrl + data.car,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
@@ -200,7 +203,7 @@ function addMarker(lat, lng, info) {
 	else {
 
 		markers[data.car].setPosition(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
-		markers[data.car].setIcon("http://46.101.17.239/marker-png/marker.php?text=" + data.car);
+		markers[data.car].setIcon(activeMarkerUrl + data.car);
 	}
 
 	if (data.time) {
@@ -215,7 +218,7 @@ function addMarker(lat, lng, info) {
 	$("*[data-key='driver']").each(function(index, object) {
 		if ($.trim($(object).html()) == "") {
 			$.ajax({
-		        url: "/drivers",
+		        url: djangoRootPath + "/drivers",
 		        success: function( data ) {
 		            $(object).html(data);
 		            $(".driver select").change(function(event) {
@@ -224,7 +227,7 @@ function addMarker(lat, lng, info) {
 		            	var driverName = event.target.options[event.target.selectedIndex].innerHTML;
 		            	if (id != "" && window.confirm("Wollen Sie wirklich den Fahrer auf " + driverName + " ändern?")) {	            		
 			            	var taxi = $(event.target).parent().parent().parent().parent().parent().prev().attr("data-key");
-			            	$.ajax({ url: "/driver_change/" + taxi + "/" + oldId + "/" + id });
+			            	$.ajax({ url: djangoRootPath + "/driver_change/" + taxi + "/" + oldId + "/" + id });
 			            	$(event.target).parent().attr("data-id", id);
 			            	$(event.target).parent().html(driverName);
 		            	}
@@ -296,7 +299,7 @@ function updateSize() {
 
 function getDatabase() {
 	$.ajax({
-		url: "database.php"
+		url: djangoRootPath + "/driver_json"
 	})
 	.done(function( data ) {
 		database = $.parseJSON(data);
@@ -328,7 +331,7 @@ $(document).ready(function() {
 		updateSize();
 	});
 	$.ajax({
-        url: "/menu",
+        url: djangoRootPath + "/menu",
         success: function( data ) {
             $('#accordion').html(data);
 			$("#accordion").accordion();

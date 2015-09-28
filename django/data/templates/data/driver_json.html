@@ -1,0 +1,9 @@
+{
+	"drivers": {
+	{% for choice in object_list %}
+		"{{ choice.token }}": {
+			"name": "{{ choice.firstname }} {{ choice.lastname }}"
+		}
+	{% endfor %}
+	}
+}

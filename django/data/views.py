@@ -18,9 +18,16 @@ class DriverSelectionView(generic.list.ListView):
         queryset = Driver.objects.exclude(firstname='', lastname='')
         return queryset
 
+class DriverJsonView(generic.list.ListView):
+    # model = Position
+    template_name = "data/driver_json.html"
+    def get_queryset(self):
+        queryset = Driver.objects.exclude(firstname='', lastname='').exclude(token='')
+        return queryset
+
 class DriverChangeView(generic.TemplateView):
     # model = Position
-    template_name = "driver_change.html"
+    template_name = "data/driver_change.html"
     result = "";
     def get_context_data(self, **kwargs):
         try:

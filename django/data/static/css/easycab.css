@@ -13,7 +13,7 @@ body {
 }
 
 #menu {
-	background-image: url(logo.png);
+	background-image: url(../img/logo.png);
 	background-position: 5px 25px;
 	background-repeat: no-repeat;
     width: 280px;
@@ -116,7 +116,7 @@ a.btn {
 }
 
 .ui-accordion-header-icon {
-	background: url(arrows-inactive.png) -24px 0;
+	background: url(../img/arrows-inactive.png) -24px 0;
 	background-repeat: no-repeat;
 	margin: -2px 0 0 0;
 	padding: 0;
@@ -127,7 +127,7 @@ a.btn {
 }
 
 h3.active .ui-accordion-header-icon {
-	background: url(arrows.png) -24px 0;
+	background: url(../img/arrows.png) -24px 0;
 }
 
 .ui-accordion-header-active .ui-accordion-header-icon {
@@ -161,7 +161,6 @@ h3.active.ui-accordion-header-active .ui-accordion-header-icon {
 @media screen and (orientation: portrait){
 
 	#menu {
-		background-image: url(logo.png);
 		background-position: 5px 5px;
 		background-repeat: no-repeat;
 		background-size: 30%;

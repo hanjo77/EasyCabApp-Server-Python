@@ -1,17 +1,28 @@
-<!DOCTYPE html>
-{% load staticfiles %}
+<!DOCTYPE html>{% load staticfiles %}{% load markers %}{% marker 'static/img/marker-template-active.png' text='42' text_x=3 text_y=3 opacity=0.5 hue=105 text_colour='333333' %}{% marker 'static/img/marker-template-inactive.png' text='42' text_x=3 text_y=3 opacity=0.5 hue=105 text_colour='333333' %}
 <html>
 <head>
 	<meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>EasyCab map</title>
+    <link href="{% static "icon/apple-touch-icon.png" %}" rel="apple-touch-icon" />
+    <link href="{% static "icon/apple-touch-icon-76x76.png" %}" rel="apple-touch-icon" sizes="76x76" />
+    <link href="{% static "icon/apple-touch-icon-120x120.png" %}" rel="apple-touch-icon" sizes="120x120" />
+    <link href="{% static "icon/apple-touch-icon-152x152.png" %}" rel="apple-touch-icon" sizes="152x152" />
+    <link href="{% static "icon/apple-touch-icon-180x180.png" %}" rel="apple-touch-icon" sizes="180x180" />
+    <link href="{% static "icon/icon-hires.png" %}" rel="icon" sizes="192x192" />
+    <link href="{% static "icon/icon-normal.png" %}" rel="icon" sizes="128x128" />
+    <link rel="icon" href="{% static "icon/favicon.ico" %}" type="image/x-icon; charset=binary" />
+	<link rel="stylesheet" type="text/css" href="{% static "css/easycab.css" %}">
 	<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAsz3V9X_fTjwe-TzHtuA16-wjMZ71a7gY&sensor=false"></script>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-	<script src="{% static "mqttws31.js" %}"></script>
+	<script src="{% static "js/mqttws31.js" %}"></script>
 	<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
 	<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-	<script src="{% static "easycab.js" %}"></script>
-	<link rel="stylesheet" type="text/css" href="{% static "easycab.css" %}">
+	<script>
+		var markerActive = "{% marker 'static/img/marker-template-active.png' text='1' %}";
+		var markerInactive = "{% marker 'static/img/marker-template-inactive.png' text='3' hue=105 %}";
+	</script>
+	<script src="{% static "js/easycab.js" %}"></script>
 </head>
 <body>
 	<div id="menu">
