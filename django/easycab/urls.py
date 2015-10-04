@@ -25,5 +25,6 @@ urlpatterns = [
     url(r'^driver_json', views.DriverJsonView.as_view(), name='driver_json'),
     url(r"^map_marker/", include("markers.urls")),
     url(r'^driver_change/(?P<taxi>[^\/]*)/(?P<driver_id_old>[0-9]*)/(?P<driver_id_new>[0-9]*)', views.DriverChangeView.as_view(), name='driver_change'),
+    url(r'^path/(?P<start_time>[0-9,\-,\:,\ ]*)/(?P<end_time>[0-9,\-,\:,\ ]*)/(?P<taxi_id>[0-9]*)', views.PathView.as_view(), name='driver_change'),
     url(r'^$', TemplateView.as_view(template_name="index.html"), name='index'),
 ]

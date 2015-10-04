@@ -41,7 +41,7 @@ var options = {
 	}
 };
 
-var djangoRootPath = "";
+var djangoRootPath = "/data";
 var center = null;
 var map = null;
 var currentPopup;
@@ -50,8 +50,11 @@ var activeMarker = null;
 var markers = {};
 var timeouts = {};
 var database = {};
-var activeMarkerUrl = "/map_marker/img/marker-template-active.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
-var inactiveMarkerUrl = "/map_marker/img/marker-template-inactive.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
+var path;
+// var activeMarkerUrl = "/map_marker/img/marker-template-active.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
+// var inactiveMarkerUrl = "/map_marker/img/marker-template-inactive.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
+var activeMarkerUrl = "/marker-png/marker.php?text="
+var inactiveMarkerUrl = "/marker-png/marker.php?inactive=true&text="
 
 function removeMarker(key) {
 	var marker = markers[key];
@@ -317,7 +320,7 @@ function formatDateTime(timeString) {
 	var date = new Date(timeString);
 	return ('0' + date.getDate()).slice(-2) + '.'
 		+ ('0' + (date.getMonth()+1)).slice(-2) + '.'
-		+ date.getFullYear() + " - "
+		+ date.getFullYear() + " "
 		+ ('0' + date.getHours()).slice(-2) + ':'
 		+ ('0' + date.getMinutes()).slice(-2) + ':'
 		+ ('0' + date.getSeconds()).slice(-2);
@@ -333,8 +336,79 @@ $(document).ready(function() {
 	$.ajax({
         url: djangoRootPath + "/menu",
         success: function( data ) {
-            $('#accordion').html(data);
+        $('#accordion').html(data);
 			$("#accordion").accordion();
+
+			$('.pathForm .time').timepicker({
+		        'timeFormat': 'H:i:s'
+		    });
+
+		    $('.pathForm .date').datepicker({
+			    'closeText': 'schliessen',
+			    'prevText': 'zurück',
+			    'nextText': 'weiter',
+			    'currentText': 'Heute',
+			    'dateFormat': 'dd.mm.yy',
+			    'monthNames': ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+			    'dayNames': ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag','Samstag'],
+			    'dayNamesMin': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+		        'autoclose': true,
+				onClose: function(selectedDate) {
+					$(this).parent().find(".time").trigger("click");
+        			$(".to_date").datepicker("option", "minDate", selectedDate);
+        			return $(".to_date").datepicker("show");
+      			}		    
+      		});
+
+		    $('.dateRow').hide();
+
+		    $('#showPath').change(function(event) {
+		    	var $target = $(event.target);
+		    	if($target.is(':checked')) {
+			    	$target.parent().parent().find('.dateRow').show();
+			    	var datetime = formatDateTime(new Date().toString()).split(" ");
+			    	var date = datetime[0];
+			    	var time = datetime[1];
+			    	$target.parent().parent().find('.date').val(date);
+			    	$target.parent().parent().find('.time').val(time);
+		    	}
+		    	else {
+			    	$target.parent().parent().find('.dateRow').hide();
+		    	}
+		    });
+
+		    $('.dateRow input').change(function(event) {
+		    	var $target = $(event.target);
+		    	var $localRoot = $target.closest('div');
+		    	var dateArray = $localRoot.find('.start.date').val().split(".");
+		    	var startTime = dateArray[2]+"-"+dateArray[1]+"-"+dateArray[0];
+		    	startTime += " " + $localRoot.find('.start.time').val();
+		    	dateArray = $localRoot.find('.end.date').val().split(".");
+		    	var endTime = dateArray[2]+"-"+dateArray[1]+"-"+dateArray[0];
+		    	endTime += " " + $localRoot.find('.end.time').val();
+		    	var taxiId = $localRoot.attr('data-id');
+		    	// http://localhost:8000/path/19.10.2015%2000:00:00/20.10.2015%2001:00:00/1
+				$.ajax({
+			        url: djangoRootPath + "/path/" + startTime + "/" + endTime + "/" + taxiId,
+			        success: function( data ) {
+			        	if (path) {
+			        		path.setMap(null);
+			        	}
+			        	var json = $.parseJSON(data);
+						path = new google.maps.Polyline({
+						    path: json.path,
+						    geodesic: true,
+						    strokeColor: '#f8d360',
+						    strokeOpacity: 1.0,
+						    strokeWeight: 2
+						});
+						path.setMap(map);
+			        }
+			    });
+		    });
+
+		    // initialize datepair
+		    // $('.pathForm').datepair();
 			$("#accordion h3").each(function(index, object) {
 				var $object = $(object);
 				var latlng = $object.attr("data-position").split(",");
@@ -343,7 +417,9 @@ $(document).ready(function() {
 					addMarker(latlng[0], latlng[1], '{ "car": "' + key + '", "gps": { "latitude": ' + latlng[0] + ', "longitude": ' + latlng[1] + ' } }');
 				}
 			});
+
 			refreshAccordion();
+
 			$(".displayFilter").change(function(event) {
 				eval($(event.target).val() + "()");
 			})

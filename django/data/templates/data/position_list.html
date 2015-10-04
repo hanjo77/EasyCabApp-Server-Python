@@ -1,24 +1,40 @@
 {% for choice in object_list %}
 <h3 class="car{{ choice.taxi.name }}" data-id="{{ choice.taxi.id }}" data-position="{{ choice.latitude }},{{ choice.longitude }}" data-key="{{ choice.taxi.name }}">{{ choice.taxi.name }}</h3>
-<div class="car{{ choice.taxi.name }}">
-<table>
-	<tbody>
-		<tr class="time">
-			<th>Zeit</th>
-			<td data-key="time">{{ choice.time|date:"d.m.Y H:i:s"  }}</td>
-		</tr>
-		<tr class="driver">
-			<th>Fahrer</th>
-			<td data-key="driver" data-id="{{ choice.driver.id }}">{{ choice.driver.firstname }} {{ choice.driver.lastname }}</td>
-		</tr>
-		<tr class="position">
-			<th>Position</th>
-			<td>
-				<span data-key="gps.latitude">{{ choice.latitude }}</span>, 
-				<span data-key="gps.longitude">{{ choice.longitude }}</span>
-			</td>
-		</tr>
-	</tbody>
-</table>
+<div class="car{{ choice.taxi.name }}" data-id="{{ choice.taxi.id }}" data-position="{{ choice.latitude }},{{ choice.longitude }}" data-key="{{ choice.taxi.name }}">
+	<table>
+		<tbody>
+			<tr class="time">
+				<th>Zeit</th>
+				<td data-key="time">{{ choice.time|date:"d.m.Y H:i:s"  }}</td>
+			</tr>
+			<tr class="driver">
+				<th>Fahrer</th>
+				<td data-key="driver" data-id="{{ choice.driver.id }}">{{ choice.driver.firstname }} {{ choice.driver.lastname }}</td>
+			</tr>
+			<tr class="position">
+				<th>Position</th>
+				<td>
+					<span data-key="gps.latitude">{{ choice.latitude }}</span>, 
+					<span data-key="gps.longitude">{{ choice.longitude }}</span>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<ul class="pathForm">
+		<li class="showPath">
+			<label for="showPath">Pfad anzeigen</label>
+			<input type="checkbox" id="showPath" />
+		</li>
+		<li class="dateRow">
+			<label for="startPathDate">von</label>
+			<input type="text" class="start date" id="startPathDate" />
+			<input type="text" class="start time" id="startPathTime" />
+		</li>
+		<li class="dateRow">
+			<label for="endPathDate">bis</label>
+			<input type="text" class="end date" id="endPathDate" />
+			<input type="text" class="end time" id="endPathTime" />
+		</li>
+	</ul>
 </div>
 {% endfor %}

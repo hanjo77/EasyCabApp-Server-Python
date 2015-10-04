@@ -2,14 +2,15 @@ from django.shortcuts import render
 from django.views import generic
 from data.models import Position
 from data.models import Driver
-from django.db.models import Max
+from data.models import Taxi
 
 class MenuView(generic.list.ListView):
     # model = Position
+    template_name = "data/position_list.html"
     def get_queryset(self):
-        queryset = Position.objects.raw('select * '
-										+ 'from data_position a '
-										+ 'where time = (select max(time) from data_position where taxi_id = a.taxi_id);')
+        queryset = []
+        for taxi in Taxi.objects.all():
+            queryset.append(Position.objects.filter(taxi=taxi).latest('time'))
         return queryset
 
 class DriverSelectionView(generic.list.ListView):
@@ -38,3 +39,11 @@ class DriverChangeView(generic.TemplateView):
             self.kwargs["result"] = "OK"
         except:
             self.kwargs["result"] = "Fail"
+
+class PathView(generic.list.ListView):
+    # model = Position
+    template_name = "data/path_json.html"
+    def get_queryset(self):
+        queryset = Position.objects.filter(taxi_id=self.kwargs['taxi_id']).filter(time__range=[self.kwargs['start_time'], self.kwargs['end_time']])
+        return queryset
+
