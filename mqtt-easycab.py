@@ -21,7 +21,7 @@ def add_driver(token):
         driver_id = cursor.lastrowid
     except Exception,e:
         driver_id = 0
-        print("error on query: " + query + " - " + token)
+        print("error on query: " + query)
     cnx.commit()
     cursor.close()
     cnx.close()    
@@ -38,7 +38,6 @@ def get_driver(token):
         for (id) in cursor:
             print(id)
             driver_id = id[0]
-        cnx.commit()
     except Exception,e:
         print("error on query: " + query)
     cursor.close()
@@ -54,9 +53,9 @@ def add_taxi(name):
     try:
         cursor.execute(query, parameters)
         cnx.commit()
+        taxi_id = cursor.lastrowid
     except Exception,e:
         print("error on query: " + query)
-    cnx.commit()
     cursor.close()
     cnx.close()    
     return taxi_id
@@ -71,12 +70,79 @@ def get_taxi(name):
         cursor.execute(query, parameters)
         for (id) in cursor:
             taxi_id = id[0]
-        cnx.commit()
     except Exception,e:
         print("error on query: " + query)
     cursor.close()
     cnx.close()    
     return taxi_id
+
+def add_phone(mac_addr):
+    phone_id = 0
+    cnx = get_connection()
+    cursor = cnx.cursor()
+    query = "INSERT INTO data_phone (mac) VALUES (%(mac_addr)s)"
+    parameters = { 'mac_addr': mac_addr }
+    try:
+        cursor.execute(query, parameters)
+        cnx.commit()
+        phone_id = cursor.lastrowid
+    except Exception,e:
+        print("error on query: " + query)
+    cursor.close()
+    cnx.close()    
+    return phone_id
+
+def get_phone(mac_addr):
+    phone_id = 0
+    cnx = get_connection()
+    cursor = cnx.cursor()
+    query = "SELECT id FROM data_phone WHERE mac = %(mac_addr)s LIMIT 1"
+    parameters = { 'mac_addr': mac_addr }
+    try:
+        cursor.execute(query, parameters)
+        for (id) in cursor:
+            phone_id = id[0]
+    except Exception,e:
+        print("error on query: " + query)
+    cursor.close()
+    cnx.close()    
+    return phone_id
+
+def add_session(driver_id, taxi_id, phone_id):
+    session_id = 0
+    cnx = get_connection()
+    cursor = cnx.cursor()
+    query = "INSERT INTO data_session (driver_id, taxi_id, phone_id, startTime, endTime) VALUES (%(driver_id)s, %(taxi_id)s, %(phone_id)s, %(start_time)s, %(end_time)s)"
+    parameters = { 'taxi_id': str(taxi_id), 'driver_id': str(driver_id), 'phone_id': str(phone_id), 'start_time': datetime.datetime.now(), 'end_time': datetime.datetime.now() }
+    try:
+        cursor.execute(query, parameters)
+        cnx.commit()
+        session_id = cursor.lastrowid
+    except Exception,e:
+        print("error on query: " + query)
+    cursor.close()
+    cnx.close()    
+    return session_id
+
+def get_session(driver_id, taxi_id, phone_id):
+    session_id = 0
+    cnx = get_connection()
+    cursor = cnx.cursor()
+    query = "SELECT id FROM data_session WHERE taxi_id = %(taxi_id)s AND driver_id = %(driver_id)s AND phone_id = %(phone_id)s AND endTime > DATE_SUB(NOW(), INTERVAL 1 MINUTE) ORDER BY startTime DESC LIMIT 1"
+    parameters = { 'taxi_id': str(taxi_id), 'driver_id': str(driver_id), 'phone_id': str(phone_id) }
+    try:
+        cursor.execute(query, parameters)
+        for (id) in cursor:
+            session_id = id[0]
+            query = "UPDATE data_session SET endTime = %(end_time)s WHERE id = %(session_id)s"
+            parameters = { 'end_time': datetime.datetime.now(), 'session_id': session_id }
+            cursor.execute(query, parameters)
+            cnx.commit()
+    except Exception,e:
+        print("error on query: " + query)
+    cursor.close()
+    cnx.close()    
+    return session_id
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -98,24 +164,19 @@ def on_message(client, userdata, msg):
         taxi_id = get_taxi(taxi['car'])
         if taxi_id <= 0:
             taxi_id = add_taxi(taxi['car'])
-        session_id = 0
-        query = "SELECT id FROM data_session WHERE taxi_id = %(taxi_id)s AND driver_id = %(driver_id)s ORDER BY startTime DESC LIMIT 1"
-        parameters = { 'taxi_id': str(taxi_id), 'driver_id': str(driver_id) }
+        phone_id = get_phone(taxi['phone'])
+        if phone_id <= 0:
+            phone_id = add_phone(taxi['phone'])
+        session_id = get_session(driver_id, taxi_id, phone_id)
+        if session_id <= 0:
+            session_id = add_session(driver_id, taxi_id, phone_id)
+        query = "INSERT INTO data_position (session_id, latitude, longitude, time) VALUES (%s, %s, %s, %s)"
+        parameters = (str(session_id), str(taxi['gps']['latitude']), str(taxi['gps']['longitude']), datetime.datetime.now())
         try:
             cursor.execute(query, parameters)
-            for (id) in cursor:
-                session_id = id[0]
             cnx.commit()
         except Exception,e:
             print("error on query: " + query)
-        if session_id > 0:
-            query = "INSERT INTO data_position (session_id, latitude, longitude, time) VALUES (%s, %s, %s, %s)"
-            parameters = (str(session_id), str(taxi['gps']['latitude']), str(taxi['gps']['longitude']), datetime.datetime.now())
-            try:
-                cursor.execute(query, parameters)
-                cnx.commit()
-            except Exception,e:
-                print("error on query: " + query)
         cursor.close()
         cnx.close()
     except AttributeError, e:

@@ -51,8 +51,8 @@ var markers = {};
 var timeouts = {};
 var database = {};
 var path;
-var activeMarkerUrl = "/map_marker/img/marker-template-active.png?text_colour=315aa6&text_y=8&text_size=14&font_path=Verdana.ttf&text="
-var inactiveMarkerUrl = "/map_marker/img/marker-template-inactive.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
+var activeMarkerUrl = djangoRootPath + "/map_marker/img/marker-template-active.png?text_size=14&text_y=8&text_colour=315aa6&text="
+var inactiveMarkerUrl = djangoRootPath + "/map_marker/img/marker-template-inactive.png?text_size=14&text_y=8&text_colour=f8d360&text="
 // var activeMarkerUrl = "/marker-png/marker.php?text="
 // var inactiveMarkerUrl = "/marker-png/marker.php?inactive=true&text="
 
@@ -76,7 +76,6 @@ function refreshAccordion() {
 		var $target = $(event.target);
 		var targetId = $target.attr("data-key");
 		if (markers[targetId]) {
-
 			new google.maps.event.trigger(markers[targetId], 'click');
 		}
 	});

@@ -5,6 +5,10 @@ body, select, input {
 	padding: 0;
 }
 
+table th {
+	font-weight: normal;
+}
+
 #map { 
 	width: 1280px;
 	height: 800px;
@@ -54,7 +58,7 @@ a.btn {
 }
 
 #accordion h3 {
-	font-weight: bold;
+	font-weight: normal;
 }
 
 #accordion h3 {
@@ -103,6 +107,7 @@ a.btn {
 	text-align: right;
 	background-color: #315aa6;
 	color: #f7de94;
+	font-weight: normal;
 }
 
 #accordion table td {
@@ -141,13 +146,11 @@ a.btn {
 #accordion .pathForm li.showPath label {
 	float: right;
 	width: 14.5em;
-	font-weight: bold;
 }
 
 #accordion .pathForm li.showPath input {
 	float: right;
 	margin-right: .5em;
-	font-weight: bold;
 }
 
 #accordion .pathForm li.dateRow input {
@@ -173,7 +176,7 @@ a.btn {
 }
 
 #accordion .pathForm li.dateRow label {
-	font-weight: bold;
+	font-weight: normal;
 }
 
 .displayFilter {
@@ -269,7 +272,6 @@ h3.active.ui-accordion-header-active .ui-accordion-header-icon {
 .ui-datepicker-title {
     text-align: center;
     line-height: 2em;
-    font-weight: bold;
     margin-bottom: .2em;
 }
 
@@ -295,7 +297,6 @@ table.ui-datepicker-calendar td[data-handler=selectDay].ui-datepicker-current-da
 
 table.ui-datepicker-calendar td[data-handler=selectDay].ui-datepicker-current-day a {
 	color: #f7de94;
-	font-weight: bold;
 }
 
 
@@ -305,7 +306,6 @@ table.ui-datepicker-calendar td[data-handler=selectDay]:hover {
 
 table.ui-datepicker-calendar td[data-handler=selectDay]:hover a {
 	color: #f7de94;
-	font-weight: bold;
 }
 
 table.ui-datepicker-calendar {
@@ -315,6 +315,10 @@ table.ui-datepicker-calendar {
 table.ui-datepicker-calendar thead th {
 	color: #f7de94;
 	background: #315aa6;
+}
+
+#ui-datepicker-div {
+	display: none;
 }
 
 .ui-timepicker-wrapper {
@@ -355,7 +359,6 @@ li.ui-timepicker-selected {
 	cursor: pointer;
 	background: #315aa6;
 	color: #f7de94;
-	font-weight: bold;
 }
 
 .phone a,

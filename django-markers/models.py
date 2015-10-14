@@ -170,7 +170,7 @@ class Marker(object):
         text_width, text_height = draw_text.textsize(self.text)
 
         if self.text_position[0] is None:
-            self.text_position[0] = ((image_width - (1.55*text_width)) / 2)
+            self.text_position[0] = ((image_height - text_height) / 2) - 50
         if self.text_position[1] is None:
             self.text_position[1] = (image_height - text_height) / 2
 

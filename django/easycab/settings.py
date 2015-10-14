@@ -83,8 +83,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'HOST': '127.0.0.1',
         'NAME': 'easycab',
-        'USER': 'root',
-        'PASSWORD': '',
+        'USER': 'easycab',
+        'PASSWORD': 'raspberry',
     }
 }
 
@@ -107,7 +107,8 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/Applications/XAMPP/htdocs/static'
+STATIC_ROOT = '/var/www/html/static'
+# MEDIA_ROOT = '/var/www/html/media'
 
 CORS_ORIGIN_WHITELIST = (
     '46.101.17.239',
