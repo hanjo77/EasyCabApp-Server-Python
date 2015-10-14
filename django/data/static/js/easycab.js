@@ -374,6 +374,9 @@ $(document).ready(function() {
 		    	}
 		    	else {
 			    	$target.parent().parent().find('.dateRow').hide();
+			    	if (path) {
+			    		path.setMap(null);
+			    	}
 		    	}
 		    });
 
