@@ -4,6 +4,9 @@
 		"{{ driver.token }}": {
 			"name": "{{ driver.firstname }} {{ driver.lastname }}"
 		}
+		{% if forloop.last == False %}
+		,
+		{% endif %}
 	{% endfor %}
 	}
 }

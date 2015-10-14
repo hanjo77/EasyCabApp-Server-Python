@@ -358,6 +358,13 @@ li.ui-timepicker-selected {
 	font-weight: bold;
 }
 
+.phone a,
+.phone a:focus,
+.phone a:hover {
+	text-decoration: none;
+	color: #315aa6;
+}
+
 
 /* #### Mobile Phones Portrait #### */
 @media screen and (orientation: portrait){

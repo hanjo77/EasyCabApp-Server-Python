@@ -11,6 +11,10 @@
 				<th>Fahrer</th>
 				<td data-key="driver" data-id="{{ position.session.driver.id }}">{{ position.session.driver.firstname }} {{ position.session.driver.lastname }}</td>
 			</tr>
+			<tr class="phone">
+				<th>Telefon</th>
+				<td data-key="phone" data-id="{{ position.session.phone.id }}"><a href="tel:{{ position.session.phone.number }}">{{ position.session.phone.number }}</a></td>
+			</tr>
 			<tr class="position">
 				<th>Position</th>
 				<td>
