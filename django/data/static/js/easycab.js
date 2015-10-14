@@ -41,7 +41,7 @@ var options = {
 	}
 };
 
-var djangoRootPath = "/data";
+var djangoRootPath = "";
 var center = null;
 var map = null;
 var currentPopup;
@@ -51,10 +51,10 @@ var markers = {};
 var timeouts = {};
 var database = {};
 var path;
-// var activeMarkerUrl = "/map_marker/img/marker-template-active.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
-// var inactiveMarkerUrl = "/map_marker/img/marker-template-inactive.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
-var activeMarkerUrl = "/marker-png/marker.php?text="
-var inactiveMarkerUrl = "/marker-png/marker.php?inactive=true&text="
+var activeMarkerUrl = "/map_marker/img/marker-template-active.png?text_colour=315aa6&text_y=8&text_size=14&font_path=Verdana.ttf&text="
+var inactiveMarkerUrl = "/map_marker/img/marker-template-inactive.png?text_colour=f8d360&text_y=8&text_size=14&font_path=Verdana.ttf&text="
+// var activeMarkerUrl = "/marker-png/marker.php?text="
+// var inactiveMarkerUrl = "/marker-png/marker.php?inactive=true&text="
 
 function removeMarker(key) {
 	var marker = markers[key];

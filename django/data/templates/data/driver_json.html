@@ -1,8 +1,8 @@
 {
 	"drivers": {
-	{% for choice in object_list %}
-		"{{ choice.token }}": {
-			"name": "{{ choice.firstname }} {{ choice.lastname }}"
+	{% for driver in object_list %}
+		"{{ driver.token }}": {
+			"name": "{{ driver.firstname }} {{ driver.lastname }}"
 		}
 	{% endfor %}
 	}

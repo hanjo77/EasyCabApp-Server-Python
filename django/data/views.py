@@ -3,6 +3,7 @@ from django.views import generic
 from data.models import Position
 from data.models import Driver
 from data.models import Taxi
+from data.models import Session
 
 class MenuView(generic.list.ListView):
     # model = Position
@@ -10,7 +11,12 @@ class MenuView(generic.list.ListView):
     def get_queryset(self):
         queryset = []
         for taxi in Taxi.objects.all():
-            queryset.append(Position.objects.filter(taxi=taxi).latest('time'))
+            try:
+                session = Session.objects.filter(taxi=taxi).latest('startTime')
+                queryset.append(Position.objects.filter(session=session).latest('time'))
+            except:
+                # Don't worry, there might just be no session or position for this taxi yet
+                return []
         return queryset
 
 class DriverSelectionView(generic.list.ListView):

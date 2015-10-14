@@ -1,2 +1,2 @@
-{"path":[{% for choice in object_list %}{"lat":{{ choice.latitude }},"lng":{{ choice.longitude }}}{% if not forloop.last %},{% endif %}{% endfor %}]}
+{"path":[{% for position in object_list %}{"lat":{{ position.latitude }},"lng":{{ position.longitude }}}{% if not forloop.last %},{% endif %}{% endfor %}]}
 
