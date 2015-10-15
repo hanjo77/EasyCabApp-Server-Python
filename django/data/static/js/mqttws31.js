@@ -1449,7 +1449,7 @@ Paho.MQTT = (function (global) {
 					this.onConnectionLost({errorCode:errorCode, errorMessage:errorText});      	
 			} else {
 				// Otherwise we never had a connection, so indicate that the connect has failed.
-				if (this.connectOptions.mqttVersion === 4 && this.connectOptions.mqttVersionExplicit === false) {
+				if (this.connectOptions.mqttVersion === 4) {
 					this._trace("Failed to connect V4, dropping back to V3")
 					this.connectOptions.mqttVersion = 3;
 					if (this.connectOptions.uris) {

@@ -108,6 +108,7 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/var/www/html/static'
+# MEDIA_URL = '/media/'
 # MEDIA_ROOT = '/var/www/html/media'
 
 CORS_ORIGIN_WHITELIST = (

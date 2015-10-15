@@ -112,7 +112,7 @@ def add_session(driver_id, taxi_id, phone_id):
     session_id = 0
     cnx = get_connection()
     cursor = cnx.cursor()
-    query = "INSERT INTO data_session (driver_id, taxi_id, phone_id, startTime, endTime) VALUES (%(driver_id)s, %(taxi_id)s, %(phone_id)s, %(start_time)s, %(end_time)s)"
+    query = "INSERT INTO data_session (driver_id, taxi_id, phone_id, start_time, end_time) VALUES (%(driver_id)s, %(taxi_id)s, %(phone_id)s, %(start_time)s, %(end_time)s)"
     parameters = { 'taxi_id': str(taxi_id), 'driver_id': str(driver_id), 'phone_id': str(phone_id), 'start_time': datetime.datetime.now(), 'end_time': datetime.datetime.now() }
     try:
         cursor.execute(query, parameters)
@@ -128,13 +128,13 @@ def get_session(driver_id, taxi_id, phone_id):
     session_id = 0
     cnx = get_connection()
     cursor = cnx.cursor()
-    query = "SELECT id FROM data_session WHERE taxi_id = %(taxi_id)s AND driver_id = %(driver_id)s AND phone_id = %(phone_id)s AND endTime > DATE_SUB(NOW(), INTERVAL 1 MINUTE) ORDER BY startTime DESC LIMIT 1"
+    query = "SELECT id FROM data_session WHERE taxi_id = %(taxi_id)s AND driver_id = %(driver_id)s AND phone_id = %(phone_id)s AND end_time > DATE_SUB(NOW(), INTERVAL 1 MINUTE) ORDER BY end_time DESC LIMIT 1"
     parameters = { 'taxi_id': str(taxi_id), 'driver_id': str(driver_id), 'phone_id': str(phone_id) }
     try:
         cursor.execute(query, parameters)
         for (id) in cursor:
             session_id = id[0]
-            query = "UPDATE data_session SET endTime = %(end_time)s WHERE id = %(session_id)s"
+            query = "UPDATE data_session SET end_time = %(end_time)s WHERE id = %(session_id)s"
             parameters = { 'end_time': datetime.datetime.now(), 'session_id': session_id }
             cursor.execute(query, parameters)
             cnx.commit()

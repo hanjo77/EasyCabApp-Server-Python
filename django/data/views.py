@@ -12,7 +12,7 @@ class MenuView(generic.list.ListView):
         queryset = []
         for taxi in Taxi.objects.all():
             try:
-                session = Session.objects.filter(taxi=taxi).latest('startTime')
+                session = Session.objects.filter(taxi=taxi).latest('start_time')
                 queryset.append(Position.objects.filter(session=session).latest('time'))
             except:
                 # Don't worry, there might just be no session or position for this taxi yet

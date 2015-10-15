@@ -5,7 +5,6 @@ class Driver(models.Model):
     firstname = models.CharField(max_length=255)
     lastname = models.CharField(max_length=255)
     token = models.CharField(max_length=255)
-    last_login = models.DateTimeField(auto_now=True)
 
 class Taxi(models.Model):
     name = models.CharField(max_length=255)
@@ -19,8 +18,8 @@ class Session(models.Model):
     driver = models.ForeignKey(Driver)
     taxi = models.ForeignKey(Taxi)
     phone = models.ForeignKey(Phone)
-    startTime = models.DateTimeField(auto_now_add=True)
-    endTime = models.DateTimeField()
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField()
 
 class Position(models.Model):
     session = models.ForeignKey(Session)
