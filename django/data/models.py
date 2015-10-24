@@ -36,3 +36,5 @@ class Position(models.Model):
 class AppConfig(models.Model):
     position_update_interval = models.IntegerField()
     maximal_data_storage_days = models.IntegerField()
+    def get_model_fields(self):
+        return self._meta.fields

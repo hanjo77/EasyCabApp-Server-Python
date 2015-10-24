@@ -394,7 +394,7 @@ $(document).ready(function() {
 			        	}
 			        	var json = $.parseJSON(data);
 						path = new google.maps.Polyline({
-						    path: json.path,
+						    path: json,
 						    geodesic: true,
 						    strokeColor: '#f8d360',
 						    strokeOpacity: 1.0,
