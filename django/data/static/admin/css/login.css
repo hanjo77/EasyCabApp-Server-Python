@@ -1,0 +1,66 @@
+/* LOGIN FORM */
+
+body.login {
+    background: #eee;
+}
+
+.login #container {
+    background: white;
+    border: 1px solid #ccc;
+    width: 36em;
+    min-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+}
+
+.login #content-main {
+    width: 100%;
+}
+
+.login form {
+    margin-top: 1em;
+}
+
+.login .form-row {
+    float: left;
+    width: 100%;
+}
+
+.login .form-row label {
+    padding-right: 2.5em;
+    line-height: 2.6em;
+    font-size: 1em;
+    clear: both;
+    color: #333;
+    width: 14.8em;
+    display: block;
+    float: left;
+    text-align: right;
+}
+
+.login .form-row #id_username, .login .form-row #id_password {
+    clear: both;
+    padding: 6px;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+}
+
+.login span.help {
+    font-size: 10px;
+    display: block;
+}
+
+.login .submit-row {
+    clear: both;
+    padding: 1em 0 0 17em;
+}
+
+.login .password-reset-link {
+    text-align: center;
+}
+
+.login #branding {
+    margin-top: 20px;
+}

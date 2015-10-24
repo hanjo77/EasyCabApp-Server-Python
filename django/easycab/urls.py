@@ -20,9 +20,12 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^app_config/(?P<pk>[0-9]*)', views.AppConfigJsonView.as_view(), name='app_config'),
     url(r'^menu', views.MenuView.as_view(), name='menu'),
+    url(r'^menu/(?P<taxi>.*)', views.MenuView.as_view(), name='menu'),
     url(r'^drivers', views.DriverSelectionView.as_view(), name='driver_selection'),
-    url(r'^driver_json', views.DriverJsonView.as_view(), name='driver_json'),
+    url(r'^json_driver', views.DriverJsonView.as_view(), name='json_driver'),
+    url(r'^json_phone', views.PhoneJsonView.as_view(), name='json_phone'),
     url(r"^map_marker/", include("markers.urls")),
     url(r'^driver_change/(?P<taxi>[^\/]*)/(?P<driver_id_old>[0-9]*)/(?P<driver_id_new>[0-9]*)', views.DriverChangeView.as_view(), name='driver_change'),
     url(r'^path/(?P<start_time>[0-9,\-,\:,\ ]*)/(?P<end_time>[0-9,\-,\:,\ ]*)/(?P<taxi_id>[0-9]*)', views.PathView.as_view(), name='driver_change'),

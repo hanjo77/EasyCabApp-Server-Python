@@ -143,31 +143,12 @@ function addMarker(lat, lng, info) {
 		});
 
 		if ($('.car' + data.car).length <= 0) {
-
-			var tableData = '<table>'
-					+ '<tbody>'
-						+ '<tr class="time">'
-							+ '<th>Time</th>'
-							+ '<td data-key="time">' + formatDateTime(data.time) + '</td>'
-						+ '<tr>'
-						+ '<tr class="driver">'
-							+ '<th>Driver</th>'
-							+ '<td data-key="driver">' + getDriverNameFromToken(data.driver) + '</td>'
-						+ '<tr>'
-						+ '<tr class="position">'
-							+ '<th>Position</th>'
-							+ '<td>'
-								+ '<span data-key="gps.latitude">' + data.gps.latitude.toFixed(7) + '</span>, '
-								+ '<span data-key="gps.longitude">' + data.gps.longitude.toFixed(7) + '</span>'
-							+ '</td>'
-						+ '<tr>'
-					+ '</tbody>'
-				+ '<table>';
-
-			$("#accordion").append('<h3 id="' + data.car + '" class="car' + data.car + '" data-key="' + data.car + '" data-position="' + data.gps.latitude.toFixed(7) + "," + data.gps.longitude.toFixed(7) + '">' + data.car + '</h3>'
-				+ '<div class="car' + data.car + '">'
-					+ tableData
-				+ '</div>');
+			$.ajax({
+		        url: djangoRootPath + "/menu/" + data.car,
+		        success: function( data ) {
+		            $('#accordion').append(data);
+		        }
+		    });			
 		}
 
 		var elem = $('#accordion').find('h3, div').sort(sortByTagAndClass);			
@@ -212,6 +193,7 @@ function addMarker(lat, lng, info) {
 
 		$(".car" + data.car + " *[data-key='time']").html(formatDateTime(data.time));
 		$(".car" + data.car + " *[data-key='driver']").html(getDriverNameFromToken(data.driver));
+		$(".car" + data.car + " *[data-key='phone']").html(getPhoneNumberFromMac(data.phone));
 		$(".car" + data.car + " *[data-key='gps.latitude']").html(data.gps.latitude.toFixed(7));
 		$(".car" + data.car + " *[data-key='gps.longitude']").html(data.gps.longitude.toFixed(7));
 		$('h3.car' + data.car).addClass("active");
@@ -300,12 +282,19 @@ function updateSize() {
 }
 
 function getDatabase() {
-	$.ajax({
-		url: djangoRootPath + "/driver_json"
-	})
-	.done(function( data ) {
-		database = $.parseJSON(data);
-	});
+	var tables = ["driver", "phone"]
+	database = {};
+	for (var i = 0; i < tables.length; i++) {
+		$.ajax({
+			url: djangoRootPath + "/json_" + tables[i]
+		})
+		.done(function( data ) {
+			items = $.parseJSON(data);
+			for (var elem in items) {
+				database[elem] = items[elem];
+			}
+		});
+	}
 }
 
 function getDriverNameFromToken(token) {
@@ -313,6 +302,13 @@ function getDriverNameFromToken(token) {
 		return database.drivers[token].name;
 	}
 	return token;
+}
+
+function getPhoneNumberFromMac(mac_addr) {
+	if (database && database.phones && database.phones[mac_addr]) {
+		return database.phones[mac_addr].number;
+	}
+	return mac_addr;
 }
 
 function formatDateTime(timeString) {

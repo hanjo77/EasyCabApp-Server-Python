@@ -39,6 +39,7 @@ p, ol, ul, dl {
 
 p {
     padding: 0;
+    margin: 20px;
     line-height: 140%;
 }
 
@@ -50,7 +51,7 @@ h1 {
     font-size: 18px;
     color: #666;
     padding: 0 6px 0 0;
-    margin: 0 0 .2em 0;
+    margin: -60px 0 60px 210px;
 }
 
 h2 {
@@ -247,7 +248,7 @@ td, th {
     line-height: 13px;
     border-bottom: 1px solid #eee;
     vertical-align: top;
-    padding: 5px;
+    padding: 10px;
 }
 
 th {
@@ -308,7 +309,7 @@ tr.alt {
 /* SORTABLE TABLES */
 
 thead th {
-    padding: 2px 5px;
+    padding: 10px;
     line-height: normal;
 }
 
@@ -476,7 +477,7 @@ a.button {
 
 .module {
     border: 1px solid #ccc;
-    margin-bottom: 5px;
+    margin: 0 20px 5px;
     background: #fff;
 }
 
@@ -499,8 +500,8 @@ a.button {
 
 .module h2, .module caption, .inline-group h2 {
     margin: 0;
-    padding: 2px 5px 3px 5px;
-    font-size: 11px;
+    padding: 10px;
+    font-size: 12px;
     text-align: left;
     font-weight: bold; 
     color: #315aa6;
@@ -627,7 +628,7 @@ div.system-message p.system-message-title {
 
 div.breadcrumbs {
     background: #fff url(../img/nav-bg-reverse.gif) 0 -10px repeat-x;
-    padding: 2px 8px 3px 8px;
+    padding: 2px 8px 3px 20px;
     font-size: 11px;
     color: #999;
     border-top: 1px solid #fff;
@@ -669,8 +670,7 @@ a.deletelink:hover {
     padding-left: 0;
     float: right;
     position: relative;
-    margin-top: -2.4em;
-    margin-bottom: -2em;
+    margin: -80px 20px 0;
 }
 
 .form-row .object-tools {
@@ -734,7 +734,7 @@ table#change-history tbody th {
 }
 
 #content {
-    margin: 10px 15px;
+    margin: 0;
 }
 
 #content-main {
@@ -785,14 +785,28 @@ table#change-history tbody th {
 }
 
 .dashboard #content {
-    width: 500px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.dashboard #content h1 {
+    padding: 0;
+    margin: -40px 0 30px 210px;
+    display: block;
+}
+
+.dashboard .breadcrumbs+#content h1 {
+    padding: 0;
+    margin: -60px 0 50px 210px;
+    display: block;
 }
 
 /* HEADER */
 
 #header {
     width: 100%;
-    background-image: url(../../logo.png);
+    background-image: url(../img/logo.png);
     background-position: 20px 20px;
     background-repeat: no-repeat;
     height: 100px;
@@ -815,7 +829,7 @@ table#change-history tbody th {
 #branding h1 {
     padding: 0 10px;
     font-size: 18px;
-    margin: 40px 200px 0;
+    margin: 20px 200px 0;
     font-weight: normal;
 }
 
@@ -837,10 +851,12 @@ table#change-history tbody th {
 }
 
 #user-tools {
-    float: right;
     padding: 1.2em 10px;
     font-size: 11px;
     text-align: right;
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 /* SIDEBAR */
