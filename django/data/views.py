@@ -1,4 +1,5 @@
 import json
+import datetime
 from django.core import serializers
 from django.shortcuts import render
 from django.views import generic
@@ -28,7 +29,7 @@ class MenuView(generic.list.ListView):
             try:
                 session = Session.objects.filter(
                     taxi=taxi
-                ).latest('start_time')
+                )
                 queryset.append(Position.objects.filter(
                     session=session
                 ).latest('time'))
@@ -68,6 +69,41 @@ class SessionDataJsonView(generic.View):
         print queryset
         raw_data = serializers.serialize('python', queryset)
         return http.HttpResponse(json.dumps([( d['fields'] ) for d in raw_data], default=self.date_handler))
+
+class SessionJsonView(generic.View):
+    def date_handler(self, obj):
+        return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+    def get(self, request, *args, **kwargs):
+        try:
+            timeout = datetime.datetime.now() - datetime.timedelta(minutes=1)
+            taxi_name = self.kwargs['taxi']
+            driver_token = self.kwargs['driver']
+            phone_mac_addr = self.kwargs['phone']
+            session_id = (Session.objects.filter(
+                taxi__name=taxi_name
+            ).filter(
+                driver__token=driver_token
+            ).filter(
+                phone__mac=phone_mac_addr
+            ).filter(
+                end_time__gte=timeout
+            ).latest('end_time')).pk
+        except:
+            session = Session(
+                driver_id=Driver.objects.filter(token=driver_token).first().pk,
+                taxi_id=Taxi.objects.filter(name=taxi_name).first().pk,
+                phone_id=Phone.objects.filter(mac=phone_mac_addr).first().pk,
+                start_time=datetime.datetime.now(),
+                end_time=datetime.datetime.now()
+            )
+            session.save()
+            session_id = session.pk
+            print session_id
+        config_data = serializers.serialize('python', [AppConfig.objects.last()])
+        return http.HttpResponse(json.dumps({
+            'session_id': session_id,
+            'config': config_data[0]['fields']
+            }, default=self.date_handler))
 
 class DriverChangeView(generic.View):
     def get(self, request, *args, **kwargs):

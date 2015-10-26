@@ -93,33 +93,11 @@ def on_message(client, userdata, msg):
                     time=datetime.datetime.now()
                 )
                 position.save()
+                session = Session.objects.get(pk=session_id)
+                session['end_time'] = datetime.datetime.now()
+                session.save()
             except Exception, e:
                 print str(e)
-        elif msg.topic == 'session':
-            driver_id = get_driver(data['driver'])
-            if driver_id <= 0:
-                driver_id = add_driver(data['driver'])
-            taxi_id = get_taxi(data['car'])
-            if taxi_id <= 0:
-                taxi_id = add_taxi(data['car'])
-            phone_id = get_phone(data['phone'])
-            if phone_id <= 0:
-                phone_id = add_phone(data['phone'])
-            session = Session(
-                driver_id = driver_id,
-                taxi_id = taxi_id,
-                phone_id = phone_id,
-                start_time = datetime.datetime.now(),
-                end_time = datetime.datetime.now()
-            )
-            session.save()
-            config = serializers.serialize('python', AppConfig.objects.all())
-            json_data = json.dumps({
-                'session_id': session.pk,
-                'config': [d['fields'] for d in config][0]
-            })
-            client.publish('session/' + data['car'], json_data, qos=0, retain=False)
-            print json_data + " sent to " + 'session/' + data['car']
     except AttributeError, e:
         print(data)
         print(str(e))

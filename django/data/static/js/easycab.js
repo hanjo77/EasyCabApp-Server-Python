@@ -41,7 +41,7 @@ var options = {
 	}
 };
 
-var djangoRootPath = "";
+var djangoRootPath = "/data";
 var center = null;
 var map = null;
 var currentPopup;
