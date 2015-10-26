@@ -20,8 +20,8 @@ client.onMessageArrived = function (message) {
 		// console.log('ParsedJSON -- Time: ', myObj.time,' Lat: ', myObj.gps.latitude,' Lon: ',myObj.gps.longitude);
 		addMarker(
 			myObj.gps.latitude,
-			myObj.gps.longitude
-			,recievedmsg); //add marker based on lattitude and longittude, using timestamp for description for now
+			myObj.gps.longitude,
+			recievedmsg); //add marker based on lattitude and longittude, using timestamp for description for now
 		// center = bounds.getCenter(); //center on marker, zooms in to far atm, needs to be fixed!
 		// map.fitBounds(bounds);
 	}
@@ -123,7 +123,7 @@ function addMarker(lat, lng, info) {
 	var data = jQuery.parseJSON(info);
 	var pt = new google.maps.LatLng(lat, lng);
 	// bounds.extend(pt);
-	if (!markers[data.car]) {
+	if (data.car && !markers[data.car]) {
 
 		var icon = new google.maps.MarkerImage(activeMarkerUrl + data.car,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
@@ -183,7 +183,7 @@ function addMarker(lat, lng, info) {
 		});
 		markers[data.car] = marker;
 	}
-	else {
+	else if (data.car) {
 
 		markers[data.car].setPosition(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
 		markers[data.car].setIcon(activeMarkerUrl + data.car);
@@ -194,8 +194,8 @@ function addMarker(lat, lng, info) {
 		$(".car" + data.car + " *[data-key='time']").html(formatDateTime(data.time));
 		$(".car" + data.car + " *[data-key='driver']").html(getDriverNameFromToken(data.driver));
 		$(".car" + data.car + " *[data-key='phone']").html(getPhoneNumberFromMac(data.phone));
-		$(".car" + data.car + " *[data-key='gps.latitude']").html(data.gps.latitude.toFixed(7));
-		$(".car" + data.car + " *[data-key='gps.longitude']").html(data.gps.longitude.toFixed(7));
+		$(".car" + data.car + " *[data-key='gps.latitude']").html(data.gps.latitude);
+		$(".car" + data.car + " *[data-key='gps.longitude']").html(data.gps.longitude);
 		$('h3.car' + data.car).addClass("active");
 	}
 
@@ -282,19 +282,29 @@ function updateSize() {
 }
 
 function getDatabase() {
-	var tables = ["driver", "phone"]
 	database = {};
-	for (var i = 0; i < tables.length; i++) {
-		$.ajax({
-			url: djangoRootPath + "/json_" + tables[i]
-		})
-		.done(function( data ) {
-			items = $.parseJSON(data);
-			for (var elem in items) {
-				database[elem] = items[elem];
+	$.ajax({
+		url: djangoRootPath + "/json_driver"
+	})
+	.done(function( data ) {
+		database["drivers"] = {};
+		items = $.parseJSON(data);
+		for (var j = 0; j < items.length; j++) {
+			for (var elem in items[j]) {
+				database["drivers"][elem] = items[j][elem];
 			}
-		});
-	}
+		}
+	});
+	$.ajax({
+		url: djangoRootPath + "/json_phone"
+	})
+	.done(function( data ) {
+		database["phones"] = {};
+		items = $.parseJSON(data);
+		for (var j = 0; j < items.length; j++) {
+			database["phones"][items[j]['mac']] = items[j];
+		}
+	});
 }
 
 function getDriverNameFromToken(token) {

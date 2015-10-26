@@ -20,6 +20,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^session_data/(?P<pk>[0-9]*)', views.SessionDataJsonView.as_view(), name='session_data'),
     url(r'^app_config/(?P<pk>[0-9]*)', views.AppConfigJsonView.as_view(), name='app_config'),
     url(r'^menu', views.MenuView.as_view(), name='menu'),
     url(r'^menu/(?P<taxi>.*)', views.MenuView.as_view(), name='menu'),

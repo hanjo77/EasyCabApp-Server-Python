@@ -60,6 +60,15 @@ class DriverJsonView(generic.View):
         raw_data = serializers.serialize('python', queryset)
         return http.HttpResponse(json.dumps([{d['fields']['token']: d['fields']['firstname']+" "+d['fields']['lastname']} for d in raw_data]))
 
+class SessionDataJsonView(generic.View):
+    def date_handler(self, obj):
+        return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+    def get(self, request, *args, **kwargs):
+        queryset = Session.objects.filter(pk=self.kwargs['pk'])
+        print queryset
+        raw_data = serializers.serialize('python', queryset)
+        return http.HttpResponse(json.dumps([( d['fields'] ) for d in raw_data], default=self.date_handler))
+
 class DriverChangeView(generic.View):
     def get(self, request, *args, **kwargs):
         try:

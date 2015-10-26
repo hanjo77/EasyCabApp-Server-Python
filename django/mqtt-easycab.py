@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-  
 
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "easycab.settings")
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'easycab.settings')
 import django
+from django.core import serializers
 django.setup()
 import paho.mqtt.client as mqtt
 import datetime
@@ -13,6 +14,7 @@ from data.models import Driver
 from data.models import Taxi
 from data.models import Phone
 from data.models import Session
+from data.models import AppConfig
 
 def add_driver(token):
     driver = Driver(
@@ -42,7 +44,10 @@ def add_phone(mac_addr):
     return phone.id
 
 def get_phone(mac_addr):
-    return Phone.objects.filter(mac=mac_addr)[0].id
+    try:
+        return Phone.objects.filter(mac=mac_addr)[0].id
+    except:
+        return 0
 
 def add_session(driver_id, taxi_id, phone_id):
     session = Session(
@@ -71,40 +76,59 @@ def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("presence")
+    client.subscribe('session')
+    client.subscribe('presence')
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    taxi = json.loads(msg.payload)
+    data = json.loads(msg.payload)
     try:
-        driver_id = get_driver(taxi['driver'])
-        if driver_id <= 0:
-            driver_id = add_driver(taxi['driver'])
-        taxi_id = get_taxi(taxi['car'])
-        if taxi_id <= 0:
-            taxi_id = add_taxi(taxi['car'])
-        phone_id = get_phone(taxi['phone'])
-        if phone_id <= 0:
-            phone_id = add_phone(taxi['phone'])
-        session_id = get_session(driver_id, taxi_id, phone_id)
-        if session_id <= 0:
-            session_id = add_session(driver_id, taxi_id, phone_id)
-        position = Position(
-            session_id=session_id,
-            latitude=taxi['gps']["latitude"],
-            longitude=taxi['gps']["longitude"],
-            time=datetime.datetime.now()
-        )
-        position.save()
+        if msg.topic == 'presence':
+            try:
+                session_id = data['session']
+                position = Position(
+                    session_id=session_id,
+                    latitude=data['gps']['latitude'],
+                    longitude=data['gps']['longitude'],
+                    time=datetime.datetime.now()
+                )
+                position.save()
+            except Exception, e:
+                print str(e)
+        elif msg.topic == 'session':
+            driver_id = get_driver(data['driver'])
+            if driver_id <= 0:
+                driver_id = add_driver(data['driver'])
+            taxi_id = get_taxi(data['car'])
+            if taxi_id <= 0:
+                taxi_id = add_taxi(data['car'])
+            phone_id = get_phone(data['phone'])
+            if phone_id <= 0:
+                phone_id = add_phone(data['phone'])
+            session = Session(
+                driver_id = driver_id,
+                taxi_id = taxi_id,
+                phone_id = phone_id,
+                start_time = datetime.datetime.now(),
+                end_time = datetime.datetime.now()
+            )
+            session.save()
+            config = serializers.serialize('python', AppConfig.objects.all())
+            json_data = json.dumps({
+                'session_id': session.pk,
+                'config': [d['fields'] for d in config][0]
+            })
+            client.publish('session/' + data['car'], json_data, qos=0, retain=False)
+            print json_data + " sent to " + 'session/' + data['car']
     except AttributeError, e:
-        print(taxi)
+        print(data)
         print(str(e))
 
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect("46.101.17.239", 1883, 10)
+client.connect('46.101.17.239', 1883, 10)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
