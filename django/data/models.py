@@ -6,26 +6,26 @@ class Driver(models.Model):
     lastname = models.CharField(max_length=255)
     token = models.CharField(max_length=255)
     def __unicode__(self):
-       return self.firstname + " " + self.lastname
+       return unicode(self.firstname + " " + self.lastname)
 
 class Taxi(models.Model):
     name = models.CharField(max_length=255)
     def __unicode__(self):
-       return self.name
+       return unicode(self.name)
 
 class Phone(models.Model):
     mac = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     number = models.CharField(max_length=255)
     def __unicode__(self):
-       return self.name + " (" + self.number + ")"
+       return unicode(self.name + " (" + self.number + ")")
 
 class Session(models.Model):
     driver = models.ForeignKey(Driver)
     taxi = models.ForeignKey(Taxi)
     phone = models.ForeignKey(Phone)
     start_time = models.DateTimeField(auto_now_add=True)
-    end_time = models.DateTimeField()
+    end_time = models.DateTimeField(auto_now_add=True)
 
 class Position(models.Model):
     session = models.ForeignKey(Session)

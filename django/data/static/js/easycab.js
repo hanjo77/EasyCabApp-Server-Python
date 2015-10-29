@@ -9,7 +9,7 @@ client.onConnectionLost = function (responseObject) {
 
 client.onMessageArrived = function (message) {
 	// mqttitude mesaage recieved is in JSON format. See http://mqttitude.org/api.html	
-	//console.log(message.payloadString);	
+	console.log(message.payloadString);	
 	var recievedmsg = message.payloadString;
 	var myObj = jQuery.parseJSON(recievedmsg); //parse payload
 	if (myObj.disconnected) {
@@ -33,7 +33,7 @@ var options = {
 		// alert("Connected");
 		console.log("mqtt connected");
 		// Connection succeeded; subscribe to our topic
-		client.subscribe('presence', {qos: 0});
+		client.subscribe('position', {qos: 0});
 	},
 	onFailure: function (message) {
 		alert("Connection failed: " + message.errorMessage);
@@ -41,7 +41,7 @@ var options = {
 	}
 };
 
-var djangoRootPath = "/data";
+var djangoRootPath = "";
 var center = null;
 var map = null;
 var currentPopup;

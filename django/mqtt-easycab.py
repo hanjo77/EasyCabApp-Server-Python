@@ -73,7 +73,15 @@ def get_session(driver_id, taxi_id, phone_id):
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    print('Connected with result code '+str(rc))
+    # Subscribing in on_connect() means that if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    client.subscribe('session')
+    client.subscribe('presence')
+
+# The callback for when the client receives a CONNACK response from the server.
+def on_connect(client, userdata, flags, rc):
+    print('Connected with result code '+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     client.subscribe('session')
@@ -93,9 +101,19 @@ def on_message(client, userdata, msg):
                     time=datetime.datetime.now()
                 )
                 position.save()
-                session = Session.objects.get(pk=session_id)
-                session['end_time'] = datetime.datetime.now()
+                session = Session.objects.filter(id=session_id).first()
+                session.end_time = datetime.datetime.now()
                 session.save()
+                client.publish('position', json.dumps({
+                    'car': session.taxi.name,
+                    'driver': session.driver.token,
+                    'phone': session.phone.mac,
+                    'gps': {
+                        'latitude': position.latitude,
+                        'longitude': position.longitude
+                    },
+                    'time': position.time.isoformat()
+                }), qos=0, retain=True)
             except Exception, e:
                 print str(e)
     except AttributeError, e:
