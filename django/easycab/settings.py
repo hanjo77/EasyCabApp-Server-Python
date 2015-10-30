@@ -44,7 +44,6 @@ INSTALLED_APPS = (
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -81,7 +80,7 @@ WSGI_APPLICATION = 'easycab.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': '127.0.0.1',
+        'HOST': '46.101.17.239',
         'NAME': 'easycab',
         'USER': 'easycab',
         'PASSWORD': 'raspberry',
@@ -114,5 +113,6 @@ STATIC_ROOT = '/var/www/html/static'
 CORS_ORIGIN_WHITELIST = (
     '46.101.17.239',
     'hanjo.synology.me',
+    'localhost',
     'localhost',
 )

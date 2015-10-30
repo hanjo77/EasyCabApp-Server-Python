@@ -4,12 +4,14 @@ var client = new Paho.MQTT.Client("46.101.17.239", 10001,
 
 client.onConnectionLost = function (responseObject) {
 	console.log("connection lost");
+	client = new Paho.MQTT.Client("46.101.17.239", 10001,
+				"myclientid_" + parseInt(Math.random() * 100, 10));
 	client.connect(options);
 };
 
 client.onMessageArrived = function (message) {
 	// mqttitude mesaage recieved is in JSON format. See http://mqttitude.org/api.html	
-	console.log(message.payloadString);	
+	// console.log(message.payloadString);	
 	var recievedmsg = message.payloadString;
 	var myObj = jQuery.parseJSON(recievedmsg); //parse payload
 	if (myObj.disconnected) {
@@ -41,7 +43,7 @@ var options = {
 	}
 };
 
-var djangoRootPath = "";
+var djangoRootPath = "http://46.101.17.239/data";
 var center = null;
 var map = null;
 var currentPopup;
@@ -189,6 +191,8 @@ function addMarker(lat, lng, info) {
 		markers[data.car].setIcon(activeMarkerUrl + data.car);
 	}
 
+	fitMapToMarkers();
+
 	if (data.time) {
 
 		$(".car" + data.car + " *[data-key='time']").html(formatDateTime(data.time));
@@ -266,6 +270,14 @@ function initMap() {
 	client.connect(options);
 };
 
+function fitMapToMarkers() {
+	var bounds = new google.maps.LatLngBounds();
+	for(i in markers) {
+		bounds.extend(markers[i].getPosition());
+	}
+	map.fitBounds(bounds);
+}
+
 function updateSize() {
 	var mapWidth = $(window).width();
 	var mapHeight = $(window).height();
@@ -322,7 +334,15 @@ function getPhoneNumberFromMac(mac_addr) {
 }
 
 function formatDateTime(timeString) {
-	var date = new Date(timeString);
+	var dateArray = timeString.split(/[\s,T,\-,\.,\:]/);
+	var date = new Date(
+		parseInt(dateArray[0], 10), 
+		parseInt(dateArray[1], 10)-1, 
+		parseInt(dateArray[2], 10), 
+		parseInt(dateArray[3], 10), 
+		parseInt(dateArray[4], 10), 
+		parseInt(dateArray[5], 0)
+		);
 	return ('0' + date.getDate()).slice(-2) + '.'
 		+ ('0' + (date.getMonth()+1)).slice(-2) + '.'
 		+ date.getFullYear() + " "
@@ -371,11 +391,12 @@ $(document).ready(function() {
 		    	var $target = $(event.target);
 		    	if($target.is(':checked')) {
 			    	$target.parent().parent().find('.dateRow').show();
-			    	var datetime = formatDateTime(new Date().toString()).split(" ");
-			    	var date = datetime[0];
-			    	var time = datetime[1];
-			    	$target.parent().parent().find('.date').val(date);
-			    	$target.parent().parent().find('.time').val(time);
+			    	var date = new Date();
+			    	var dateArray = formatDateTime($.datepicker.formatDate('yy-mm-dd', date)
+			    		+ " " 
+			    		+ date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()).split(" ");
+			    	$target.parent().parent().find('.date').val(dateArray[0]);
+			    	$target.parent().parent().find('.time').val(dateArray[1]);
 		    	}
 		    	else {
 			    	$target.parent().parent().find('.dateRow').hide();

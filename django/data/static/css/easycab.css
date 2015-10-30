@@ -1,5 +1,5 @@
 body, select, input { 
-	font: normal 10pt Verdana, Helvetica, Arial; 
+	font: normal 9pt Verdana, Helvetica, Arial;
 	margin: 0;
 	border: 0;
 	padding: 0;
@@ -54,7 +54,7 @@ a.btn {
 	background: -o-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #f7de94 0%,#f8d360 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ); /* IE6-9 */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
 #accordion h3 {
@@ -71,7 +71,7 @@ a.btn {
 	background: -o-linear-gradient(top,  #194184 0%,#315aa6 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top,  #194184 0%,#315aa6 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #194184 0%,#315aa6 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ); /* IE6-9 */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
 #accordion h3.active {
@@ -84,7 +84,7 @@ a.btn {
 	background: -o-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #f7de94 0%,#f8d360 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ); /* IE6-9 */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
 #accordion table {
@@ -111,7 +111,7 @@ a.btn {
 }
 
 #accordion table td {
-	width: 14em;
+	width: 16em;
 }
 
 #accordion select {
@@ -157,7 +157,7 @@ a.btn {
 	font: normal 10pt Verdana, Helvetica, Arial; 
 	padding: .5em;
 	margin: 0;
-	width: 6.49em;
+	width: 7.49em;
 	border: 1px solid #315aa6;
 	font-size: 1em;
 	color: #315aa6;
@@ -168,7 +168,7 @@ a.btn {
 	background: -o-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #f7de94 0%,#f8d360 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ); /* IE6-9 */	
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */	
 }
 
 #accordion .pathForm li.dateRow input.date {
@@ -218,7 +218,7 @@ h3.active.ui-accordion-header-active .ui-accordion-header-icon {
 	background: -o-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #f7de94 0%,#f8d360 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ); /* IE6-9 */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
 #resetView {
@@ -244,7 +244,7 @@ h3.active.ui-accordion-header-active .ui-accordion-header-icon {
 	background: -o-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #f7de94 0%,#f8d360 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ); /* IE6-9 */	
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */	
 }
 
 .ui-datepicker-prev,
@@ -351,7 +351,7 @@ table.ui-datepicker-calendar thead th {
 	background: -o-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #f7de94 0%,#f8d360 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ); /* IE6-9 */	
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */	
 }
 
 .ui-timepicker-wrapper li:hover,

@@ -112,7 +112,7 @@ def on_message(client, userdata, msg):
                         'latitude': position.latitude,
                         'longitude': position.longitude
                     },
-                    'time': position.time.isoformat()
+                    'time': str(position.time.replace(microsecond=0))
                 }), qos=0, retain=True)
             except Exception, e:
                 print str(e)
