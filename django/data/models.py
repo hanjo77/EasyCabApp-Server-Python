@@ -10,6 +10,7 @@ class Driver(models.Model):
 
 class Taxi(models.Model):
     name = models.CharField(max_length=255)
+    token = models.CharField(max_length=255)
     def __unicode__(self):
        return unicode(self.name)
 
@@ -21,7 +22,7 @@ class Phone(models.Model):
        return unicode(self.name + " (" + self.number + ")")
 
 class Session(models.Model):
-    driver = models.ForeignKey(Driver)
+    driver = models.ForeignKey(Driver, null=True)
     taxi = models.ForeignKey(Taxi)
     phone = models.ForeignKey(Phone)
     start_time = models.DateTimeField(auto_now_add=True)

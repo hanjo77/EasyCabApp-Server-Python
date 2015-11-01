@@ -67,7 +67,7 @@ function removeMarker(key) {
 		if (key == activeMarker) {
 			activeMarker = null;
 		}
-		marker.setIcon(inactiveMarkerUrl + key);
+		marker.setIcon(inactiveMarkerUrl + database.taxis[key].name);
 	}
 	$("h3.car" + key).removeClass("active");
 }
@@ -127,12 +127,12 @@ function addMarker(lat, lng, info) {
 	// bounds.extend(pt);
 	if (data.car && !markers[data.car]) {
 
-		var icon = new google.maps.MarkerImage(activeMarkerUrl + data.car,
+		var icon = new google.maps.MarkerImage(activeMarkerUrl + database.taxis[data.car].name,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
 		if (!data.time) {
-			icon = new google.maps.MarkerImage(inactiveMarkerUrl + data.car,
+			icon = new google.maps.MarkerImage(inactiveMarkerUrl + database.taxis[data.car].name,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
@@ -144,7 +144,7 @@ function addMarker(lat, lng, info) {
 			map: map
 		});
 
-		if ($('.car' + data.car).length <= 0) {
+		if ($('.car' + database.taxis[data.car].name).length <= 0) {
 			$.ajax({
 		        url: djangoRootPath + "/menu/" + data.car,
 		        success: function( data ) {
@@ -169,11 +169,11 @@ function addMarker(lat, lng, info) {
 			currentPopup = null;
 		}); */
 		google.maps.event.addListener(marker, "click", function() {
-			var index = Math.floor(parseInt($(".car" + data.car).attr("id").replace("ui-id-", ""), 10) / 2);
+			var index = Math.floor(parseInt($(".car" + database.taxis[data.car].name).attr("id").replace("ui-id-", ""), 10) / 2);
 		    $("#accordion").accordion({ active: index });
 			map.setCenter(new google.maps.LatLng(
-				parseFloat($(".car" + data.car + " *[data-key='gps.latitude']").html()),
-				parseFloat($(".car" + data.car + " *[data-key='gps.longitude']").html())));
+				parseFloat($(".car" + database.taxis[data.car].name + " *[data-key='gps.latitude']").html()),
+				parseFloat($(".car" + database.taxis[data.car].name + " *[data-key='gps.longitude']").html())));
 			map.setZoom(16);
 			activeMarker = data.car;
 			/* if (currentPopup != null) {
@@ -188,18 +188,18 @@ function addMarker(lat, lng, info) {
 	else if (data.car) {
 
 		markers[data.car].setPosition(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
-		markers[data.car].setIcon(activeMarkerUrl + data.car);
+		markers[data.car].setIcon(activeMarkerUrl + database.taxis[data.car].name);
 	}
 
 	fitMapToMarkers();
 
 	if (data.time) {
 
-		$(".car" + data.car + " *[data-key='time']").html(formatDateTime(data.time));
-		$(".car" + data.car + " *[data-key='driver']").html(getDriverNameFromToken(data.driver));
-		$(".car" + data.car + " *[data-key='phone']").html(getPhoneNumberFromMac(data.phone));
-		$(".car" + data.car + " *[data-key='gps.latitude']").html(data.gps.latitude);
-		$(".car" + data.car + " *[data-key='gps.longitude']").html(data.gps.longitude);
+		$(".car" + database.taxis[data.car].name + " *[data-key='time']").html(formatDateTime(data.time));
+		$(".car" + database.taxis[data.car].name + " *[data-key='driver']").html(getDriverNameFromToken(data.driver));
+		$(".car" + database.taxis[data.car].name + " *[data-key='phone']").html(getPhoneNumberFromMac(data.phone));
+		$(".car" + database.taxis[data.car].name + " *[data-key='gps.latitude']").html(data.gps.latitude);
+		$(".car" + database.taxis[data.car].name + " *[data-key='gps.longitude']").html(data.gps.longitude);
 		$('h3.car' + data.car).addClass("active");
 	}
 
@@ -215,7 +215,7 @@ function addMarker(lat, lng, info) {
 		            	var driverName = event.target.options[event.target.selectedIndex].innerHTML;
 		            	if (id != "" && window.confirm("Wollen Sie wirklich den Fahrer auf " + driverName + " ändern?")) {	            		
 			            	var taxi = $(event.target).parent().parent().parent().parent().parent().prev().attr("data-key");
-			            	$.ajax({ url: djangoRootPath + "/driver_change/" + taxi + "/" + oldId + "/" + id });
+			            	$.ajax({ url: djangoRootPath + "/driver_change/" + taxi + "/" + id });
 			            	$(event.target).parent().attr("data-id", id);
 			            	$(event.target).parent().html(driverName);
 		            	}
@@ -315,6 +315,16 @@ function getDatabase() {
 		items = $.parseJSON(data);
 		for (var j = 0; j < items.length; j++) {
 			database["phones"][items[j]['mac']] = items[j];
+		}
+	});
+	$.ajax({
+		url: djangoRootPath + "/json_taxi"
+	})
+	.done(function( data ) {
+		database["taxis"] = {};
+		items = $.parseJSON(data);
+		for (var j = 0; j < items.length; j++) {
+			database["taxis"][items[j]['token']] = items[j];
 		}
 	});
 }
@@ -442,6 +452,7 @@ $(document).ready(function() {
 				var $object = $(object);
 				var latlng = $object.attr("data-position").split(",");
 				var key = $object.attr("data-key");
+				var name = $object.attr("data-name");
 				if (!markers[key]) {
 					addMarker(latlng[0], latlng[1], '{ "car": "' + key + '", "gps": { "latitude": ' + latlng[0] + ', "longitude": ' + latlng[1] + ' } }');
 				}

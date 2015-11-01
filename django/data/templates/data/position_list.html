@@ -1,6 +1,6 @@
 {% for position in object_list %}
-<h3 class="car{{ position.session.taxi.name }}" data-id="{{ position.session.taxi.id }}" data-position="{{ position.latitude }},{{ position.longitude }}" data-key="{{ position.session.taxi.name }}">{{ position.session.taxi.name }}</h3>
-<div class="car{{ position.session.taxi.name }}" data-id="{{ position.session.taxi.id }}" data-position="{{ position.latitude }},{{ position.longitude }}" data-key="{{ position.session.taxi.name }}">
+<h3 class="car{{ position.session.taxi.name }}" data-id="{{ position.session.taxi.id }}" data-position="{{ position.latitude }},{{ position.longitude }}" data-key="{{ position.session.taxi.token }}" data-name="{{ position.session.taxi.name }}">{{ position.session.taxi.name }}</h3>
+<div class="car{{ position.session.taxi.name }}" data-id="{{ position.session.taxi.id }}" data-position="{{ position.latitude }},{{ position.longitude }}" data-key="{{ position.session.taxi.token }}" data-name="{{ position.session.taxi.name }}">
 	<table>
 		<tbody>
 			<tr class="time">

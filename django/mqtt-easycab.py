@@ -105,7 +105,7 @@ def on_message(client, userdata, msg):
                 session.end_time = datetime.datetime.now()
                 session.save()
                 client.publish('position', json.dumps({
-                    'car': session.taxi.name,
+                    'car': session.taxi.token,
                     'driver': session.driver.token,
                     'phone': session.phone.mac,
                     'gps': {
