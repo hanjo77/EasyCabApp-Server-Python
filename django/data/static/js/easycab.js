@@ -69,7 +69,7 @@ function removeMarker(key) {
 		}
 		marker.setIcon(inactiveMarkerUrl + database.taxis[key].name);
 	}
-	$("h3.car" + key).removeClass("active");
+	$("h3.car" + database.taxis[key].name).removeClass("active");
 }
 
 function refreshAccordion() {
@@ -85,21 +85,21 @@ function refreshAccordion() {
 
 function showAll() {
 	for (var key in markers) {
-		var $header = $("h3.car"+key);
-		$(".car"+key).show();
+		var $header = $("h3.car"+database.taxis[key].name);
+		$(".car"+database.taxis[key].name).show();
 		markers[key].setMap(map);
 	}
 }
 
 function showActive() {
 	for (var key in markers) {
-		var $header = $("h3.car"+key);
+		var $header = $("h3.car"+database.taxis[key].name);
 		if ($header.hasClass("active")) {
-			$(".car"+key).show();
+			$(".car"+database.taxis[key].name).show();
 			markers[key].setMap(map);
 		}
 		else {
-			$(".car"+key).hide();
+			$(".car"+database.taxis[key].name).hide();
 			markers[key].setMap(null);
 		}
 	}
@@ -107,14 +107,14 @@ function showActive() {
 
 function showInactive() {
 	for (var key in markers) {
-		var $header = $("h3.car"+key);
+		var $header = $("h3.car"+database.taxis[key].name);
 		if ($header.hasClass("active")) {
-			$(".car"+key).hide();
+			$(".car"+database.taxis[key].name).hide();
 			markers[key].setMap(null);
 
 		}
 		else {
-			$(".car"+key).show();
+			$(".car"+database.taxis[key].name).show();
 			markers[key].setMap(map);
 		}
 	}
@@ -200,7 +200,7 @@ function addMarker(lat, lng, info) {
 		$(".car" + database.taxis[data.car].name + " *[data-key='phone']").html(getPhoneNumberFromMac(data.phone));
 		$(".car" + database.taxis[data.car].name + " *[data-key='gps.latitude']").html(data.gps.latitude);
 		$(".car" + database.taxis[data.car].name + " *[data-key='gps.longitude']").html(data.gps.longitude);
-		$('h3.car' + data.car).addClass("active");
+		$('h3.car' + database.taxis[data.car].name).addClass("active");
 	}
 
 	$("*[data-key='driver']").each(function(index, object) {
