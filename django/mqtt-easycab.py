@@ -104,16 +104,21 @@ def on_message(client, userdata, msg):
                 session = Session.objects.filter(id=session_id).first()
                 session.end_time = datetime.datetime.now()
                 session.save()
-                client.publish('position', json.dumps({
+                driver = '';
+                if session.driver:
+                     driver = session.driver.token
+                message = json.dumps({
                     'car': session.taxi.token,
-                    'driver': session.driver.token,
+                    'driver': driver,
                     'phone': session.phone.mac,
                     'gps': {
                         'latitude': position.latitude,
                         'longitude': position.longitude
                     },
                     'time': str(position.time.replace(microsecond=0))
-                }), qos=0, retain=True)
+                })
+                client.publish('position', message, qos=0, retain=True)
+                print message + " published to 'position'"
             except Exception, e:
                 print str(e)
     except AttributeError, e:
