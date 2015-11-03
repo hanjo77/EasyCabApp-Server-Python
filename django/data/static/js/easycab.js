@@ -10,16 +10,13 @@ client.onConnectionLost = function (responseObject) {
 };
 
 client.onMessageArrived = function (message) {
-	// mqttitude mesaage recieved is in JSON format. See http://mqttitude.org/api.html	
-	// console.log(message.payloadString);	
 	var recievedmsg = message.payloadString;
-	var myObj = jQuery.parseJSON(recievedmsg); //parse payload
+	var myObj = jQuery.parseJSON(recievedmsg);
 	if (myObj.disconnected) {
 		removeMarker(myObj.disconnected);
 	}
 	else {
 		var myDate = new Date(myObj.time *1000); //convert epoch time to readible local datetime
-		// console.log('ParsedJSON -- Time: ', myObj.time,' Lat: ', myObj.gps.latitude,' Lon: ',myObj.gps.longitude);
 		addMarker(
 			myObj.gps.latitude,
 			myObj.gps.longitude,
@@ -32,9 +29,7 @@ client.onMessageArrived = function (message) {
 var options = {
 	timeout: 3,
 	onSuccess: function () {
-		// alert("Connected");
 		console.log("mqtt connected");
-		// Connection succeeded; subscribe to our topic
 		client.subscribe('position', {qos: 0});
 	},
 	onFailure: function (message) {
@@ -55,15 +50,10 @@ var database = {};
 var path;
 var activeMarkerUrl = djangoRootPath + "/map_marker/img/marker-template-active.png?text_size=14&text_y=8&text_colour=315aa6&text="
 var inactiveMarkerUrl = djangoRootPath + "/map_marker/img/marker-template-inactive.png?text_size=14&text_y=8&text_colour=f8d360&text="
-// var activeMarkerUrl = "/marker-png/marker.php?text="
-// var inactiveMarkerUrl = "/marker-png/marker.php?inactive=true&text="
 
 function removeMarker(key) {
 	var marker = markers[key];
 	if (marker) {
-		/* marker.setMap(null);
-		$(".car" + key).remove();
-		markers[key] = null; */
 		if (key == activeMarker) {
 			activeMarker = null;
 		}
@@ -73,12 +63,97 @@ function removeMarker(key) {
 }
 
 function refreshAccordion() {
+
+	$("#accordion").accordion();
 	$("#accordion").accordion("refresh");
+
 	$("#accordion h3.ui-state-active").click(function(event) {
 		var $target = $(event.target);
 		var targetId = $target.attr("data-key");
 		if (markers[targetId]) {
 			new google.maps.event.trigger(markers[targetId], 'click');
+		}
+	});
+
+	$('.pathForm .time').timepicker({
+        'timeFormat': 'H:i:s'
+    });
+
+    $('.pathForm .date').datepicker({
+	    'closeText': 'schliessen',
+	    'prevText': 'zurück',
+	    'nextText': 'weiter',
+	    'currentText': 'Heute',
+	    'dateFormat': 'dd.mm.yy',
+	    'monthNames': ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+	    'dayNames': ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag','Samstag'],
+	    'dayNamesMin': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+        'autoclose': true,
+		onClose: function(selectedDate) {
+			$(this).parent().find(".time").trigger("click");
+			$(".to_date").datepicker("option", "minDate", selectedDate);
+			return $(".to_date").datepicker("show");
+			}		    
+		});
+
+    $('.dateRow').hide();
+
+    $('#showPath').change(function(event) {
+    	var $target = $(event.target);
+    	if($target.is(':checked')) {
+	    	$target.parent().parent().find('.dateRow').show();
+	    	var date = new Date();
+	    	var dateArray = formatDateTime($.datepicker.formatDate('yy-mm-dd', date)
+	    		+ " " 
+	    		+ date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()).split(" ");
+	    	$target.parent().parent().find('.date').val(dateArray[0]);
+	    	$target.parent().parent().find('.time').val(dateArray[1]);
+    	}
+    	else {
+	    	$target.parent().parent().find('.dateRow').hide();
+	    	if (path) {
+	    		path.setMap(null);
+	    	}
+    	}
+    });
+
+    $('.dateRow input').change(function(event) {
+    	var $target = $(event.target);
+    	var $localRoot = $target.closest('div');
+    	var dateArray = $localRoot.find('.start.date').val().split(".");
+    	var startTime = dateArray[2]+"-"+dateArray[1]+"-"+dateArray[0];
+    	startTime += " " + $localRoot.find('.start.time').val();
+    	dateArray = $localRoot.find('.end.date').val().split(".");
+    	var endTime = dateArray[2]+"-"+dateArray[1]+"-"+dateArray[0];
+    	endTime += " " + $localRoot.find('.end.time').val();
+    	var taxiId = $localRoot.attr('data-id');
+    	// http://localhost:8000/path/19.10.2015%2000:00:00/20.10.2015%2001:00:00/1
+		$.ajax({
+	        url: djangoRootPath + "/path/" + startTime + "/" + endTime + "/" + taxiId,
+	        success: function( data ) {
+	        	if (path) {
+	        		path.setMap(null);
+	        	}
+	        	var json = $.parseJSON(data);
+				path = new google.maps.Polyline({
+				    path: json,
+				    geodesic: true,
+				    strokeColor: '#f8d360',
+				    strokeOpacity: 1.0,
+				    strokeWeight: 2
+				});
+				path.setMap(map);
+	        }
+	    });
+    });
+
+	$("#accordion h3").each(function(index, object) {
+		var $object = $(object);
+		var latlng = $object.attr("data-position").split(",");
+		var key = $object.attr("data-key");
+		var name = $object.attr("data-name");
+		if (!markers[key]) {
+			addMarker(latlng[0], latlng[1], '{ "car": "' + key + '", "gps": { "latitude": ' + latlng[0] + ', "longitude": ' + latlng[1] + ' } }');
 		}
 	});
 }
@@ -121,11 +196,10 @@ function showInactive() {
 }
 
 function addMarker(lat, lng, info) {
-	//console.log(lat, lng, info);
 	var data = jQuery.parseJSON(info);
 	var pt = new google.maps.LatLng(lat, lng);
-	// bounds.extend(pt);
-	if (data.car && !markers[data.car]) {
+
+	if (data.car) {
 
 		var icon = new google.maps.MarkerImage(activeMarkerUrl + database.taxis[data.car].name,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
@@ -138,62 +212,47 @@ function addMarker(lat, lng, info) {
 
 		}
 
-		var marker = new google.maps.Marker({
-			position: pt,
-			icon: icon,
-			map: map
-		});
+		if (!markers[data.car]) {
 
-		if ($('.car' + database.taxis[data.car].name).length <= 0) {
-			$.ajax({
-		        url: djangoRootPath + "/menu/" + data.car,
-		        success: function( data ) {
-		            $('#accordion').append(data);
-		        }
-		    });			
+			var marker = new google.maps.Marker({
+				position: pt,
+				icon: icon,
+				map: map
+			});
+
+			if ($('.car' + database.taxis[data.car].name).length <= 0) {
+				$.ajax({
+			        url: djangoRootPath + "/menu/" + data.car,
+			        success: function( data ) {
+			            $('#accordion').append(data);
+			        }
+			    });			
+			}
+
+			var elem = $('#accordion').find('h3, div').sort(sortByTagAndClass);			
+
+
+			google.maps.event.addListener(marker, "click", function() {
+				var index = Math.floor(parseInt($(".car" + database.taxis[data.car].name).attr("id").replace("ui-id-", ""), 10) / 2);
+			    $("#accordion").accordion({ active: index });
+				map.setCenter(new google.maps.LatLng(
+					parseFloat($(".car" + database.taxis[data.car].name + " *[data-key='gps.latitude']").html()),
+					parseFloat($(".car" + database.taxis[data.car].name + " *[data-key='gps.longitude']").html())));
+				map.setZoom(16);
+				activeMarker = data.car;
+			});
+			markers[data.car] = marker;
+
+			updateSize();
 		}
 
-		var elem = $('#accordion').find('h3, div').sort(sortByTagAndClass);			
-
-
-		updateSize();
-
-		/* var popup = new google.maps.InfoWindow({
-			content: '<div class="carInfo">'
-			+ tableData
-			+ '</div>',
-			maxWidth: 400
-		});
-		google.maps.event.addListener(popup, "closeclick", function() {
-			// map.panTo(center);
-			currentPopup = null;
-		}); */
-		google.maps.event.addListener(marker, "click", function() {
-			var index = Math.floor(parseInt($(".car" + database.taxis[data.car].name).attr("id").replace("ui-id-", ""), 10) / 2);
-		    $("#accordion").accordion({ active: index });
-			map.setCenter(new google.maps.LatLng(
-				parseFloat($(".car" + database.taxis[data.car].name + " *[data-key='gps.latitude']").html()),
-				parseFloat($(".car" + database.taxis[data.car].name + " *[data-key='gps.longitude']").html())));
-			map.setZoom(16);
-			activeMarker = data.car;
-			/* if (currentPopup != null) {
-				currentPopup.close();
-				currentPopup = null;
-			}
-			popup.open(map, marker);
-			currentPopup = popup; */
-		});
-		markers[data.car] = marker;
-	}
-	else if (data.car) {
-
 		markers[data.car].setPosition(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
-		markers[data.car].setIcon(activeMarkerUrl + database.taxis[data.car].name);
 	}
 
 	fitMapToMarkers();
 
-	if (data.time) {
+	if (data.time && 
+		(new Date() - parseDateTimeString(data.time) < 60000)) {
 
 		$(".car" + database.taxis[data.car].name + " *[data-key='time']").html(formatDateTime(data.time));
 		$(".car" + database.taxis[data.car].name + " *[data-key='driver']").html(getDriverNameFromToken(data.driver));
@@ -263,10 +322,7 @@ function initMap() {
 		activeMarker = null;
 		event.preventDefault();
 	});
-	// center = bounds.getCenter();
-    // map.fitBounds(bounds);
-	
-	/* Connect to MQTT broker */
+
 	client.connect(options);
 };
 
@@ -344,8 +400,18 @@ function getPhoneNumberFromMac(mac_addr) {
 }
 
 function formatDateTime(timeString) {
+	var date = parseDateTimeString(timeString);
+	return ('0' + date.getDate()).slice(-2) + '.'
+		+ ('0' + (date.getMonth()+1)).slice(-2) + '.'
+		+ date.getFullYear() + " "
+		+ ('0' + date.getHours()).slice(-2) + ':'
+		+ ('0' + date.getMinutes()).slice(-2) + ':'
+		+ ('0' + date.getSeconds()).slice(-2);
+}
+
+function parseDateTimeString(timeString) {
 	var dateArray = timeString.split(/[\s,T,\-,\.,\:]/);
-	var date = new Date(
+	return new Date(
 		parseInt(dateArray[0], 10), 
 		parseInt(dateArray[1], 10)-1, 
 		parseInt(dateArray[2], 10), 
@@ -353,12 +419,6 @@ function formatDateTime(timeString) {
 		parseInt(dateArray[4], 10), 
 		parseInt(dateArray[5], 0)
 		);
-	return ('0' + date.getDate()).slice(-2) + '.'
-		+ ('0' + (date.getMonth()+1)).slice(-2) + '.'
-		+ date.getFullYear() + " "
-		+ ('0' + date.getHours()).slice(-2) + ':'
-		+ ('0' + date.getMinutes()).slice(-2) + ':'
-		+ ('0' + date.getSeconds()).slice(-2);
 }
 
 $(document).ready(function() {
@@ -371,98 +431,11 @@ $(document).ready(function() {
 	$.ajax({
         url: djangoRootPath + "/menu",
         success: function( data ) {
-        $('#accordion').html(data);
-			$("#accordion").accordion();
-
-			$('.pathForm .time').timepicker({
-		        'timeFormat': 'H:i:s'
-		    });
-
-		    $('.pathForm .date').datepicker({
-			    'closeText': 'schliessen',
-			    'prevText': 'zurück',
-			    'nextText': 'weiter',
-			    'currentText': 'Heute',
-			    'dateFormat': 'dd.mm.yy',
-			    'monthNames': ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
-			    'dayNames': ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag','Samstag'],
-			    'dayNamesMin': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
-		        'autoclose': true,
-				onClose: function(selectedDate) {
-					$(this).parent().find(".time").trigger("click");
-        			$(".to_date").datepicker("option", "minDate", selectedDate);
-        			return $(".to_date").datepicker("show");
-      			}		    
-      		});
-
-		    $('.dateRow').hide();
-
-		    $('#showPath').change(function(event) {
-		    	var $target = $(event.target);
-		    	if($target.is(':checked')) {
-			    	$target.parent().parent().find('.dateRow').show();
-			    	var date = new Date();
-			    	var dateArray = formatDateTime($.datepicker.formatDate('yy-mm-dd', date)
-			    		+ " " 
-			    		+ date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()).split(" ");
-			    	$target.parent().parent().find('.date').val(dateArray[0]);
-			    	$target.parent().parent().find('.time').val(dateArray[1]);
-		    	}
-		    	else {
-			    	$target.parent().parent().find('.dateRow').hide();
-			    	if (path) {
-			    		path.setMap(null);
-			    	}
-		    	}
-		    });
-
-		    $('.dateRow input').change(function(event) {
-		    	var $target = $(event.target);
-		    	var $localRoot = $target.closest('div');
-		    	var dateArray = $localRoot.find('.start.date').val().split(".");
-		    	var startTime = dateArray[2]+"-"+dateArray[1]+"-"+dateArray[0];
-		    	startTime += " " + $localRoot.find('.start.time').val();
-		    	dateArray = $localRoot.find('.end.date').val().split(".");
-		    	var endTime = dateArray[2]+"-"+dateArray[1]+"-"+dateArray[0];
-		    	endTime += " " + $localRoot.find('.end.time').val();
-		    	var taxiId = $localRoot.attr('data-id');
-		    	// http://localhost:8000/path/19.10.2015%2000:00:00/20.10.2015%2001:00:00/1
-				$.ajax({
-			        url: djangoRootPath + "/path/" + startTime + "/" + endTime + "/" + taxiId,
-			        success: function( data ) {
-			        	if (path) {
-			        		path.setMap(null);
-			        	}
-			        	var json = $.parseJSON(data);
-						path = new google.maps.Polyline({
-						    path: json,
-						    geodesic: true,
-						    strokeColor: '#f8d360',
-						    strokeOpacity: 1.0,
-						    strokeWeight: 2
-						});
-						path.setMap(map);
-			        }
-			    });
-		    });
-
-		    // initialize datepair
-		    // $('.pathForm').datepair();
-			$("#accordion h3").each(function(index, object) {
-				var $object = $(object);
-				var latlng = $object.attr("data-position").split(",");
-				var key = $object.attr("data-key");
-				var name = $object.attr("data-name");
-				if (!markers[key]) {
-					addMarker(latlng[0], latlng[1], '{ "car": "' + key + '", "gps": { "latitude": ' + latlng[0] + ', "longitude": ' + latlng[1] + ' } }');
-				}
-			});
-
+        	$('#accordion').html(data);
 			refreshAccordion();
-
-			$(".displayFilter").change(function(event) {
-				eval($(event.target).val() + "()");
-			})
         }
     });
+	$(".displayFilter").change(function(event) {
+		eval($(event.target).val() + "()");
+	})
 });
