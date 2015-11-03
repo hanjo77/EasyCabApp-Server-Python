@@ -14,9 +14,9 @@ var EasyCab = function() {
 					
 	this.client.onConnectionLost = function (responseObject) {
 		console.log("connection lost");
-		this.client = new Paho.MQTT.Client("46.101.17.239", 10001,
+		easyCab.client = new Paho.MQTT.Client("46.101.17.239", 10001,
 					"myclientid_" + parseInt(Math.random() * 100, 10));
-		this.client.connect(this.options);
+		easyCab.client.connect(this.options);
 	};
 
 	this.client.onMessageArrived = function (message) {
@@ -38,7 +38,7 @@ var EasyCab = function() {
 		timeout: 3,
 		onSuccess: function () {
 			console.log("mqtt connected");
-			this.client.subscribe('position', {qos: 0});
+			easyCab.client.subscribe('position', {qos: 0});
 		},
 		onFailure: function (message) {
 			alert("Connection failed: " + message.errorMessage);
@@ -260,8 +260,8 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 
 			this.updateSize();
 		}
-
 		this.markers[data.car].setPosition(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
+		this.markers[data.car].setIcon(icon);
 	}
 
 	this.fitMapToMarkers();
