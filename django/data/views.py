@@ -45,32 +45,28 @@ class DriverSelectionView(generic.list.ListView):
         )
         return queryset
 
-class PhoneJsonView(JSONListMixin, generic.list.ListView):
-    def get_queryset(self):
-        queryset = Phone.objects.all()
-        return queryset
-
-class TaxiJsonView(JSONListMixin, generic.list.ListView):
-    def get_queryset(self):
-        queryset = Taxi.objects.all()
-        return queryset
-
 class AppConfigJsonView(JSONDetailMixin, generic.DetailView):
     def get_queryset(self):
         queryset = AppConfig.objects.all()
         return queryset
 
 class DataJsonView(generic.View):
-    def get_queryset(self):
-        queryset = Taxi.objects.all()
-        raw_data = serializers.serialize('python', queryset)
-        return http.HttpResponse(json.dumps([( d['fields'] ) for d in raw_data]))
-
-class DriverJsonView(generic.View):
     def get(self, request, *args, **kwargs):
-        queryset = Driver.objects.all()
-        raw_data = serializers.serialize('python', queryset)
-        return http.HttpResponse(json.dumps([{d['fields']['token']: d['fields']['firstname']+" "+d['fields']['lastname']} for d in raw_data]))
+        taxis = serializers.serialize('python', Taxi.objects.all())
+        drivers = serializers.serialize('python', Driver.objects.all())
+        phones = serializers.serialize('python', Phone.objects.all())
+        raw_data = {
+            'taxis': {
+                str(data['fields']['token']): data['fields']['name'] 
+                for data in taxis },
+            'drivers': { 
+                str(data['fields']['token']): data['fields']['firstname'] + " " + data['fields']['lastname'] 
+                for data in drivers },
+            'phones': { 
+                str(data['fields']['mac']): data['fields'] 
+                for data in phones },
+        }
+        return http.HttpResponse(json.dumps(raw_data))
 
 class TokenValidateJsonView(generic.View):
     def get(self, request, *args, **kwargs):

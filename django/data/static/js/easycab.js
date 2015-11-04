@@ -1,6 +1,7 @@
 var EasyCab = function() {
 
 	this.djangoRootPath = "http://46.101.17.239/data";
+	// this.djangoRootPath = "http://localhost:8000";
 	this.map = null;
 	this.inactiveTimeout = 60;
 	this.activeMarker = null;
@@ -80,9 +81,9 @@ EasyCab.prototype.removeMarker = function(key) {
 		if (key == this.activeMarker) {
 			this.activeMarker = null;
 		}
-		marker.setIcon(this.inactiveMarkerUrl + this.database.taxis[key].name);
+		marker.setIcon(this.inactiveMarkerUrl + this.database.taxis[key]);
 	}
-	$("h3.car" + this.database.taxis[key].name).removeClass("active");
+	$("h3.car" + this.database.taxis[key]).removeClass("active");
 }
 
 EasyCab.prototype.refreshAccordion = function() {
@@ -183,21 +184,21 @@ EasyCab.prototype.refreshAccordion = function() {
 
 EasyCab.prototype.showAll = function() {
 	for (var key in this.markers) {
-		var $header = $("h3.car"+this.database.taxis[key].name);
-		$(".car"+this.database.taxis[key].name).show();
+		var $header = $("h3.car"+this.database.taxis[key]);
+		$(".car"+this.database.taxis[key]).show();
 		this.markers[key].setMap(this.map);
 	}
 }
 
 EasyCab.prototype.showActive = function() {
 	for (var key in this.markers) {
-		var $header = $("h3.car"+this.database.taxis[key].name);
+		var $header = $("h3.car"+this.database.taxis[key]);
 		if ($header.hasClass("active")) {
-			$(".car"+this.database.taxis[key].name).show();
+			$(".car"+this.database.taxis[key]).show();
 			this.markers[key].setMap(this.map);
 		}
 		else {
-			$(".car"+this.database.taxis[key].name).hide();
+			$(".car"+this.database.taxis[key]).hide();
 			this.markers[key].setMap(null);
 		}
 	}
@@ -205,14 +206,14 @@ EasyCab.prototype.showActive = function() {
 
 EasyCab.prototype.showInactive = function() {
 	for (var key in this.markers) {
-		var $header = $("h3.car"+this.database.taxis[key].name);
+		var $header = $("h3.car"+this.database.taxis[key]);
 		if ($header.hasClass("active")) {
-			$(".car"+this.database.taxis[key].name).hide();
+			$(".car"+this.database.taxis[key]).hide();
 			this.markers[key].setMap(null);
 
 		}
 		else {
-			$(".car"+this.database.taxis[key].name).show();
+			$(".car"+this.database.taxis[key]).show();
 			this.markers[key].setMap(this.map);
 		}
 	}
@@ -224,12 +225,12 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 
 	if (data.car && this.database.taxis && this.database.taxis[data.car]) {
 
-		var icon = new google.maps.MarkerImage(this.activeMarkerUrl + this.database.taxis[data.car].name,
+		var icon = new google.maps.MarkerImage(this.activeMarkerUrl + this.database.taxis[data.car],
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
 		if (!data.time || (new Date()-this.parseDateTimeString(data.time) > this.inactiveTimeout*1000)) {
-			icon = new google.maps.MarkerImage(this.inactiveMarkerUrl + this.database.taxis[data.car].name,
+			icon = new google.maps.MarkerImage(this.inactiveMarkerUrl + this.database.taxis[data.car],
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
@@ -243,7 +244,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 				map: this.map
 			});
 
-			if ($('.car' + this.database.taxis[data.car].name).length <= 0) {
+			if ($('.car' + this.database.taxis[data.car]).length <= 0) {
 				$.ajax({
 			        url: this.djangoRootPath + "/menu/" + data.car,
 			        success: function( data ) {
@@ -256,11 +257,11 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 
 
 			google.maps.event.addListener(marker, "click", function() {
-				var index = Math.floor(parseInt($(".car" + this.database.taxis[data.car].name).attr("id").replace("ui-id-", ""), 10) / 2);
+				var index = Math.floor(parseInt($(".car" + this.database.taxis[data.car]).attr("id").replace("ui-id-", ""), 10) / 2);
 			    $("#accordion").accordion({ active: index });
 				this.map.setCenter(new google.maps.LatLng(
-					parseFloat($(".car" + this.database.taxis[data.car].name + " *[data-key='gps.latitude']").html()),
-					parseFloat($(".car" + this.database.taxis[data.car].name + " *[data-key='gps.longitude']").html())));
+					parseFloat($(".car" + this.database.taxis[data.car] + " *[data-key='gps.latitude']").html()),
+					parseFloat($(".car" + this.database.taxis[data.car] + " *[data-key='gps.longitude']").html())));
 				this.map.setZoom(16);
 				this.activeMarker = data.car;
 			});
@@ -277,12 +278,12 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	if (data.time && 
 		(new Date() - this.parseDateTimeString(data.time) < 60000)) {
 
-		$(".car" + this.database.taxis[data.car].name + " *[data-key='time']").html(this.formatDateTime(data.time));
-		$(".car" + this.database.taxis[data.car].name + " *[data-key='driver']").html(this.getDriverNameFromToken(data.driver));
-		$(".car" + this.database.taxis[data.car].name + " *[data-key='phone']").html(this.getPhoneNumberFromMac(data.phone));
-		$(".car" + this.database.taxis[data.car].name + " *[data-key='gps.latitude']").html(data.gps.latitude);
-		$(".car" + this.database.taxis[data.car].name + " *[data-key='gps.longitude']").html(data.gps.longitude);
-		$('h3.car' + this.database.taxis[data.car].name).addClass("active");
+		$(".car" + this.database.taxis[data.car] + " *[data-key='time']").html(this.formatDateTime(data.time));
+		$(".car" + this.database.taxis[data.car] + " *[data-key='driver']").html(this.getDriverNameFromToken(data.driver));
+		$(".car" + this.database.taxis[data.car] + " *[data-key='phone']").html(this.getPhoneNumberFromMac(data.phone));
+		$(".car" + this.database.taxis[data.car] + " *[data-key='gps.latitude']").html(data.gps.latitude);
+		$(".car" + this.database.taxis[data.car] + " *[data-key='gps.longitude']").html(data.gps.longitude);
+		$('h3.car' + this.database.taxis[data.car]).addClass("active");
 	}
 
 	$("*[data-key='driver']").each(function(index, object) {
@@ -375,45 +376,19 @@ EasyCab.prototype.updateSize = function() {
 EasyCab.prototype.getDatabase = function() {
 	this.database = {};
 	$.ajax({
-		url: this.djangoRootPath + "/json_driver"
+		url: this.djangoRootPath + "/json_data"
 	})
 	.done(function( data ) {
-		easyCab.database["drivers"] = {};
-		items = $.parseJSON(data);
-		for (var j = 0; j < items.length; j++) {
-			for (var elem in items[j]) {
-				easyCab.database["drivers"][elem] = items[j][elem];
-			}
-		}
+		easyCab.database = $.parseJSON(data);
 	})
 	.error(function( data ) {
 		easyCab.getDatabase();
-	});
-	$.ajax({
-		url: this.djangoRootPath + "/json_phone"
-	})
-	.done(function( data ) {
-		easyCab.database["phones"] = {};
-		items = $.parseJSON(data);
-		for (var j = 0; j < items.length; j++) {
-			easyCab.database["phones"][items[j]['mac']] = items[j];
-		}
-	});
-	$.ajax({
-		url: this.djangoRootPath + "/json_taxi"
-	})
-	.done(function( data ) {
-		easyCab.database["taxis"] = {};
-		items = $.parseJSON(data);
-		for (var j = 0; j < items.length; j++) {
-			easyCab.database["taxis"][items[j]['token']] = items[j];
-		}
 	});
 }
 
 EasyCab.prototype.getDriverNameFromToken = function(token) {
 	if (this.database && this.database.drivers && this.database.drivers[token]) {
-		return this.database.drivers[token].name;
+		return this.database.drivers[token];
 	}
 	return token;
 }
