@@ -2,6 +2,7 @@ var EasyCab = function() {
 
 	this.djangoRootPath = "http://46.101.17.239/data";
 	this.map = null;
+	this.inactiveTimeout = 60;
 	this.activeMarker = null;
 	this.markers = {};
 	this.timeouts = {};
@@ -50,19 +51,26 @@ var EasyCab = function() {
 		easyCab.getDatabase();
 		easyCab.initMap();
 		easyCab.updateSize();
+		easyCab.initMenu();
 		$(window).resize(function() {
 			easyCab.updateSize();
 		});
-		$.ajax({
-	        url: easyCab.djangoRootPath + "/menu",
-	        success: function( data ) {
-	        	$('#accordion').html(data);
-				easyCab.refreshAccordion();
-	        }
-	    });
-		$(".displayFilter").change(function(event) {
-			eval($(event.target).val() + "()");
-		})
+	});
+}
+
+EasyCab.prototype.initMenu = function() {
+	$.ajax({
+        url: easyCab.djangoRootPath + "/menu",
+        success: function( data ) {
+        	$('#accordion').html(data);
+			easyCab.refreshAccordion();
+        },
+        error: function( data ) {
+        	easyCab.initMenu();
+        }
+    });
+	$(".displayFilter").change(function(event) {
+		eval($(event.target).val() + "()");
 	});
 }
 
@@ -214,13 +222,13 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	var data = jQuery.parseJSON(info);
 	var pt = new google.maps.LatLng(lat, lng);
 
-	if (data.car) {
+	if (data.car && this.database.taxis && this.database.taxis[data.car]) {
 
 		var icon = new google.maps.MarkerImage(this.activeMarkerUrl + this.database.taxis[data.car].name,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
-		if (!data.time) {
+		if (!data.time || (new Date()-this.parseDateTimeString(data.time) > this.inactiveTimeout*1000)) {
 			icon = new google.maps.MarkerImage(this.inactiveMarkerUrl + this.database.taxis[data.car].name,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
@@ -280,7 +288,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	$("*[data-key='driver']").each(function(index, object) {
 		if ($.trim($(object).html()) == "") {
 			$.ajax({
-		        url: this.djangoRootPath + "/drivers",
+		        url: easyCab.djangoRootPath + "/drivers",
 		        success: function( data ) {
 		            $(object).html(data);
 		            $(".driver select").change(function(event) {
@@ -289,7 +297,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 		            	var driverName = event.target.options[event.target.selectedIndex].innerHTML;
 		            	if (id != "" && window.confirm("Wollen Sie wirklich den Fahrer auf " + driverName + " ändern?")) {	            		
 			            	var taxi = $(event.target).parent().parent().parent().parent().parent().prev().attr("data-key");
-			            	$.ajax({ url: this.djangoRootPath + "/driver_change/" + taxi + "/" + id });
+			            	$.ajax({ url: easyCab.djangoRootPath + "/driver_change/" + taxi + "/" + id });
 			            	$(event.target).parent().attr("data-id", id);
 			            	$(event.target).parent().html(driverName);
 		            	}
@@ -377,6 +385,9 @@ EasyCab.prototype.getDatabase = function() {
 				easyCab.database["drivers"][elem] = items[j][elem];
 			}
 		}
+	})
+	.error(function( data ) {
+		easyCab.getDatabase();
 	});
 	$.ajax({
 		url: this.djangoRootPath + "/json_phone"
