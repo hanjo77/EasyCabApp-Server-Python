@@ -153,20 +153,20 @@ EasyCab.prototype.refreshAccordion = function() {
     	var taxiId = $localRoot.attr('data-id');
     	// http://localhost:8000/path/19.10.2015%2000:00:00/20.10.2015%2001:00:00/1
 		$.ajax({
-	        url: this.djangoRootPath + "/path/" + startTime + "/" + endTime + "/" + taxiId,
+	        url: easyCab.djangoRootPath + "/path/" + startTime + "/" + endTime + "/" + taxiId,
 	        success: function( data ) {
-	        	if (this.path) {
-	        		this.path.setMap(null);
+	        	if (easyCab.path) {
+	        		easyCab.path.setMap(null);
 	        	}
 	        	var json = $.parseJSON(data);
-				this.path = new google.maps.Polyline({
+				easyCab.path = new google.maps.Polyline({
 				    path: json,
 				    geodesic: true,
 				    strokeColor: '#f8d360',
 				    strokeOpacity: 1.0,
 				    strokeWeight: 2
 				});
-				this.path.setMap(this.map);
+				easyCab.path.setMap(easyCab.map);
 	        }
 	    });
     });

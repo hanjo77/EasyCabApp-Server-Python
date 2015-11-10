@@ -34,7 +34,7 @@ class MenuView(generic.list.ListView):
                     session=session
                 ).latest('time'))
             except:
-                return []
+                pass
         return queryset
 
 class DriverSelectionView(generic.list.ListView):
