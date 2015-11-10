@@ -3,6 +3,7 @@ import hashlib
 import os
 import numpy
 import re
+import pdb
 
 from PIL import Image, ImageDraw, ImageFont, ImageChops
 
@@ -116,6 +117,8 @@ class Marker(object):
             base = self._get_base_image()
             text_overlay, text_alpha = self._get_text_layer(base)
             base.paste(text_overlay, (0,0), text_alpha)
+            base = base.resize((base.size[0]/3,base.size[1]/3), Image.ANTIALIAS)
+
 
             try:
                 os.makedirs(os.path.dirname(cache_file))
@@ -167,14 +170,14 @@ class Marker(object):
         # Thanks to http://stackoverflow.com/questions/1970807/center-middle-align-text-with-pil
 
         image_width, image_height = base.size
-        text_width, text_height = draw_text.textsize(self.text)
+        font = ImageFont.truetype(font_path, self.text_size)
+        text_width, text_height = font.getsize(self.text)
 
         if self.text_position[0] is None:
-            self.text_position[0] = ((image_height - text_height) / 2) - 50
+            self.text_position[0] = (image_width - text_width) / 2
         if self.text_position[1] is None:
             self.text_position[1] = (image_height - text_height) / 2
 
-        font = ImageFont.truetype(font_path, self.text_size)
         draw_text.text(self.text_position, self.text, font=font, fill="white")
 
         # Add the white text to our collected alpha channel. Gray pixels around
@@ -216,6 +219,7 @@ class Marker(object):
 
         image = self._colourize(Image.open(self._check_template_exists(template), "r"))
 
+        pdb.set_trace();
         working_filename = os.path.join(
             settings.MEDIA_ROOT,
             "cache",
@@ -227,6 +231,8 @@ class Marker(object):
         try:
             os.makedirs(os.path.dirname(working_filename))
         except:
+            print "oops";
+            print working_filename;
             pass  # Directory exists, and that's cool
 
         image.save(working_filename, "PNG")

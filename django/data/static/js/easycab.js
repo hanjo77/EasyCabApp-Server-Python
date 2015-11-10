@@ -9,8 +9,10 @@ var EasyCab = function() {
 	this.timeouts = {};
 	this.database = {};
 	this.path;
-	this.activeMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-active.png?text_size=14&text_y=8&text_colour=315aa6&text="
-	this.inactiveMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-inactive.png?text_size=14&text_y=8&text_colour=f8d360&text="
+	var markerParameters = "?text_size=46" +
+						"&text_y=19";
+	this.activeMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-active-large.png" + markerParameters + "&text_colour=315aa6&text="
+	this.inactiveMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-inactive-large.png" + markerParameters + "&text_colour=f8d360&text="
 	this.client = new Paho.MQTT.Client("46.101.17.239", 10001,
 		"myclientid_" + parseInt(Math.random() * 100, 10)); 
 					
@@ -114,7 +116,7 @@ EasyCab.prototype.refreshAccordion = function() {
 	    'dayNamesMin': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
         'autoclose': true,
 		onClose: function(selectedDate) {
-			$(this).parent().find(".time").trigger("click");
+			// $(this).parent().find(".time").trigger("click");
 			$(".to_date").datepicker("option", "minDate", selectedDate);
 			return $(".to_date").datepicker("show");
 			}		    
@@ -135,8 +137,8 @@ EasyCab.prototype.refreshAccordion = function() {
     	}
     	else {
 	    	$target.parent().parent().find('.dateRow').hide();
-	    	if (this.path) {
-	    		this.path.setMap(null);
+	    	if (easyCab.path) {
+	    		easyCab.path.setMap(null);
 	    	}
     	}
     });
