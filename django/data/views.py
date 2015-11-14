@@ -25,7 +25,10 @@ class MenuView(generic.list.ListView):
     template_name = "data/position_list.html"
     def get_queryset(self):
         queryset = []
-        for taxi in Taxi.objects.all():
+        taxis = Taxi.objects.all()
+        if self.kwargs:
+            taxis = taxis.filter(token=self.kwargs['taxi'])
+        for taxi in taxis:
             try:
                 session = Session.objects.filter(
                     taxi=taxi

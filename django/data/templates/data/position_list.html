@@ -25,19 +25,22 @@
 		</tbody>
 	</table>
 	<ul class="pathForm">
+		<li class="showRoute">
+			<a href="#">Route zu Ziel-Ort anzeigen</a>
+		</li>
 		<li class="showPath">
-			<label for="showPath">Pfad anzeigen</label>
-			<input type="checkbox" id="showPath" />
+			<label for="showPath{{ position.session.taxi.name }}">Pfad anzeigen</label>
+			<input type="checkbox" id="showPath{{ position.session.taxi.name }}" />
 		</li>
 		<li class="dateRow">
-			<label for="startPathDate">von</label>
-			<input type="text" class="start date" id="startPathDate" />
-			<input type="text" class="start time" id="startPathTime" />
+			<label for="startPathDate{{ position.session.taxi.name }}">von</label>
+			<input type="text" class="start date startPathDate" id="startPathDate{{ position.session.taxi.name }}" />
+			<input type="text" class="start time startPathTime" id="startPathTime{{ position.session.taxi.name }}" />
 		</li>
 		<li class="dateRow">
-			<label for="endPathDate">bis</label>
-			<input type="text" class="end date" id="endPathDate" />
-			<input type="text" class="end time" id="endPathTime" />
+			<label for="endPathDate{{ position.session.taxi.name }}">bis</label>
+			<input type="text" class="end date endPathDate" id="endPathDate{{ position.session.taxi.name }}" />
+			<input type="text" class="end time endPathTime" id="endPathTime{{ position.session.taxi.name }}" />
 		</li>
 	</ul>
 </div>

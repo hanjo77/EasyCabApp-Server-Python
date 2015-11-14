@@ -77,7 +77,7 @@ class Marker(object):
                 self.template,
                 self.hue,
                 self.opacity,
-                self.text,
+                self.text.encode('ascii',errors='ignore'),
                 self.text_position,
                 self.text_size,
                 self.text_colour
@@ -117,6 +117,7 @@ class Marker(object):
             base = self._get_base_image()
             text_overlay, text_alpha = self._get_text_layer(base)
             base.paste(text_overlay, (0,0), text_alpha)
+            base.paste(text_overlay, (2,2), text_alpha)
             base = base.resize((base.size[0]/3,base.size[1]/3), Image.ANTIALIAS)
 
 
@@ -164,7 +165,7 @@ class Marker(object):
             "static",
             "markers",
             "fonts",
-            "Verdana Bold.ttf"
+            "Verdana.ttf"
         )
 
         # Thanks to http://stackoverflow.com/questions/1970807/center-middle-align-text-with-pil

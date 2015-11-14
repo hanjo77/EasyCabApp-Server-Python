@@ -1,21 +1,33 @@
 var EasyCab = function() {
 
-	this.djangoRootPath = "http://46.101.17.239/data";
-	// this.djangoRootPath = "http://localhost:8000";
+	// this.djangoRootPath = "http://46.101.17.239/data";
+	this.djangoRootPath = "http://localhost:8000";
 	this.map = null;
+	this.directionsService = new google.maps.DirectionsService();
+	this.directionsDisplay = new google.maps.DirectionsRenderer();
 	this.inactiveTimeout = 60;
 	this.activeMarker = null;
 	this.markers = {};
+	this.goalMarker = {};
 	this.timeouts = {};
 	this.database = {};
 	this.path;
 	var markerParameters = "?text_size=46" +
 						"&text_y=19";
+	this.pathMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-path-large.png" + markerParameters + "&text_colour=315aa6&text="
 	this.activeMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-active-large.png" + markerParameters + "&text_colour=315aa6&text="
 	this.inactiveMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-inactive-large.png" + markerParameters + "&text_colour=f8d360&text="
 	this.client = new Paho.MQTT.Client("46.101.17.239", 10001,
 		"myclientid_" + parseInt(Math.random() * 100, 10)); 
-					
+	this.directionsService = new google.maps.DirectionsService();
+	this.directionsDisplay = new google.maps.DirectionsRenderer({ 
+		suppressMarkers: true,
+		suppressInfoWindows: true,
+		polylineOptions: {
+			strokeColor: '#f8d360',
+			strokeWeight: 5
+		}
+	});
 	this.client.onConnectionLost = function (responseObject) {
 		console.log("connection lost");
 		easyCab.client = new Paho.MQTT.Client("46.101.17.239", 10001,
@@ -66,15 +78,32 @@ EasyCab.prototype.initMenu = function() {
         url: easyCab.djangoRootPath + "/menu",
         success: function( data ) {
         	$('#accordion').html(data);
-			easyCab.refreshAccordion();
+        	$('#accordion').accordion();
+			$('#accordion h3').each(function(index, object) {
+				var $object = $(object);
+				var latlng = $object.attr("data-position").split(",");
+				var key = $object.attr("data-key");
+				var name = $object.attr("data-name");
+				if (!easyCab.markers[key]) {
+					easyCab.addMarker(latlng[0], latlng[1], '{ "car": "' + key + '", "gps": { "latitude": ' + latlng[0] + ', "longitude": ' + latlng[1] + ' } }');
+				}
+			});
+			$("#accordion").accordion("refresh");
         },
         error: function( data ) {
         	easyCab.initMenu();
         }
     });
 	$(".displayFilter").change(function(event) {
-		eval($(event.target).val() + "()");
+		eval("easyCab." + $(event.target).val() + "()");
 	});
+}
+
+EasyCab.prototype.hidePath = function() {
+	$('.dateRow').hide();
+	if (this.path) {
+		this.path.setMap(null);
+	}
 }
 
 EasyCab.prototype.removeMarker = function(key) {
@@ -88,24 +117,16 @@ EasyCab.prototype.removeMarker = function(key) {
 	$("h3.car" + this.database.taxis[key]).removeClass("active");
 }
 
-EasyCab.prototype.refreshAccordion = function() {
+EasyCab.prototype.refreshAccordion = function(parentSelector) {
+	if (parentSelector && (parentSelector != "")) {
+		parentSelector += " ";
+	}
 
-	$("#accordion").accordion();
-	$("#accordion").accordion("refresh");
-
-	$("#accordion h3.ui-state-active").click(function(event) {
-		var $target = $(event.target);
-		var targetId = $target.attr("data-key");
-		if (this.markers[targetId]) {
-			new google.maps.event.trigger(this.markers[targetId], 'click');
-		}
-	});
-
-	$('.pathForm .time').timepicker({
+	$(parentSelector + '.pathForm .time').timepicker({
         'timeFormat': 'H:i:s'
     });
 
-    $('.pathForm .date').datepicker({
+    $(parentSelector + '.pathForm .date').datepicker({
 	    'closeText': 'schliessen',
 	    'prevText': 'zurück',
 	    'nextText': 'weiter',
@@ -122,9 +143,9 @@ EasyCab.prototype.refreshAccordion = function() {
 			}		    
 		});
 
-    $('.dateRow').hide();
+    $(parentSelector + '.dateRow').hide();
 
-    $('#showPath').change(function(event) {
+    $(parentSelector + '.showPath').change(function(event) {
     	var $target = $(event.target);
     	if($target.is(':checked')) {
 	    	$target.parent().parent().find('.dateRow').show();
@@ -136,14 +157,12 @@ EasyCab.prototype.refreshAccordion = function() {
 	    	$target.parent().parent().find('.time').val(dateArray[1]);
     	}
     	else {
-	    	$target.parent().parent().find('.dateRow').hide();
-	    	if (easyCab.path) {
-	    		easyCab.path.setMap(null);
-	    	}
+    		easyCab.hidePath();
     	}
+		$("#accordion").accordion("refresh");
     });
 
-    $('.dateRow input').change(function(event) {
+    $(parentSelector + '.dateRow input').change(function(event) {
     	var $target = $(event.target);
     	var $localRoot = $target.closest('div');
     	var dateArray = $localRoot.find('.start.date').val().split(".");
@@ -166,20 +185,46 @@ EasyCab.prototype.refreshAccordion = function() {
 				    geodesic: true,
 				    strokeColor: '#f8d360',
 				    strokeOpacity: 1.0,
-				    strokeWeight: 2
+				    strokeWeight: 5
 				});
 				easyCab.path.setMap(easyCab.map);
 	        }
 	    });
     });
 
-	$("#accordion h3").each(function(index, object) {
-		var $object = $(object);
-		var latlng = $object.attr("data-position").split(",");
-		var key = $object.attr("data-key");
-		var name = $object.attr("data-name");
-		if (!easyCab.markers[key]) {
-			easyCab.addMarker(latlng[0], latlng[1], '{ "car": "' + key + '", "gps": { "latitude": ' + latlng[0] + ', "longitude": ' + latlng[1] + ' } }');
+	$("h3" + parentSelector).click(function(event) {
+		var $target = $(event.target);
+		var $container = $target.next();
+		if ($target.hasClass("ui-state-active")) {
+			var targetId = $target.attr("data-key");
+			if (easyCab.markers[targetId]) {
+				new google.maps.event.trigger(easyCab.markers[targetId], 'click');
+			}
+		}
+		else {
+			easyCab.activeMarker = null;
+			var $activeContainer = $('h3.ui-state-active').next();
+			var $showPath = $activeContainer.find('.showPath input');
+			if ($showPath[0].checked) {
+				$showPath.trigger('click');
+			}
+			easyCab.fitMapToMarkers();
+		}
+	});
+
+	$(parentSelector + ".showRoute a").click(function(event) {
+		var $target = $(event.target);
+		var $container = $target.parents(".ui-accordion-content");
+		var start = new google.maps.LatLng(
+			parseFloat($container.find('span[data-key="gps.latitude"]').text()),
+			parseFloat($container.find('span[data-key="gps.longitude"]').text())
+		);
+		var end = $("#endPoint").val();
+		if (end == "") {
+			end = $("#startPoint").val();
+		}
+		if (start && end != "") {
+			easyCab.drawRoute(start, end, $container.attr("data-name"));
 		}
 	});
 }
@@ -251,21 +296,33 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 			        url: this.djangoRootPath + "/menu/" + data.car,
 			        success: function( data ) {
 			            $('#accordion').append(data);
+			            $("h3").click(function(event) {
+							var $target = $(event.target);
+							if ($target.hasClass("ui-state-active")) {
+								var targetId = $target.attr("data-key");
+								if (easyCab.markers[targetId]) {
+									new google.maps.event.trigger(easyCab.markers[targetId], 'click');
+								}
+							}
+							else {
+								easyCab.activeMarker = null;
+								easyCab.fitMapToMarkers();
+							}
+						});
 			        }
 			    });			
 			}
 
 			var elem = $('#accordion').find('h3, div').sort(this.sortByTagAndClass);			
 
-
 			google.maps.event.addListener(marker, "click", function() {
-				var index = Math.floor(parseInt($(".car" + this.database.taxis[data.car]).attr("id").replace("ui-id-", ""), 10) / 2);
+				var index = Math.floor(parseInt($(".car" + easyCab.database.taxis[data.car]).attr("id").replace("ui-id-", ""), 10) / 2);
 			    $("#accordion").accordion({ active: index });
-				this.map.setCenter(new google.maps.LatLng(
-					parseFloat($(".car" + this.database.taxis[data.car] + " *[data-key='gps.latitude']").html()),
-					parseFloat($(".car" + this.database.taxis[data.car] + " *[data-key='gps.longitude']").html())));
-				this.map.setZoom(16);
-				this.activeMarker = data.car;
+				easyCab.map.setCenter(new google.maps.LatLng(
+					parseFloat($(".car" + easyCab.database.taxis[data.car] + " *[data-key='gps.latitude']").html()),
+					parseFloat($(".car" + easyCab.database.taxis[data.car] + " *[data-key='gps.longitude']").html())));
+				easyCab.map.setZoom(16);
+				easyCab.activeMarker = data.car;
 			});
 			this.markers[data.car] = marker;
 
@@ -320,15 +377,21 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 		new google.maps.event.trigger(this.markers[this.activeMarker], 'click');
 	}
 	this.updateSize();
-	this.refreshAccordion();
+	this.refreshAccordion(".car" + this.database.taxis[data.car]);
 };
+
+EasyCab.prototype.placeMarkers = function() {
+	for (var marker in this.markers) {
+		this.markers[marker].setMap(this.map);
+	}
+}
 
 EasyCab.prototype.sortByTagAndClass = function(a, b) {
     return (a.className < b.className || a.tagName > b.tagName);
 }
 
 EasyCab.prototype.initMap = function() {
-	this.map = new google.maps.Map(document.getElementById("map"), {
+	var mapOptions = {
 		zoom: 10,
 		mapTypeId: google.maps.MapTypeId.HYBRID,
 		mapTypeControl: true,
@@ -339,18 +402,114 @@ EasyCab.prototype.initMap = function() {
 		navigationControlOptions: {
 			style: google.maps.NavigationControlStyle.ZOOM_PAN
 		}
-	});
+	};
+	this.map = new google.maps.Map(document.getElementById("map"), mapOptions);
 	this.map.setCenter(new google.maps.LatLng(47.000,7.400));
+	this.directionsDisplay.setPanel($("#routeDisplay")[0]);
+	this.directionsDisplay.setMap(this.map);					
+
 	$("body").append('<a href="#" class="btn" id="resetView">Reset</a>');
 	$("#resetView").click(function(event) {
-		this.map.setCenter(new google.maps.LatLng(47.000,7.400));
-		this.map.setZoom(10);
-		this.activeMarker = null;
+		easyCab.fitMapToMarkers();
+		easyCab.activeMarker = null;
 		event.preventDefault();
 	});
+	var options = {
+		markerOptions: {
+			draggable: true
+		}
+	};
+	$('#routeWindowHeader .btnClose').click(function(event) {
+		$("#routeWindow").hide();
+		if (easyCab.markers["startPoint"]) {
+			easyCab.markers["startPoint"].setMap(null);
+			delete(easyCab.markers["startPoint"]);
+		}
+		if (easyCab.markers["endPoint"]) {
+			easyCab.markers["endPoint"].setMap(null);
+			delete(easyCab.markers["endPoint"]);		} 		
+		if (easyCab.directionsDisplay) easyCab.directionsDisplay.setMap(null);
+		$(".placeSearch").val("");
+		easyCab.fitMapToMarkers();
+	});
+	$('.placeSearch').geocomplete(options).bind("geocode:result", function(event, result){
+		var $target = $(event.target);
+		var name = "";
+		switch ($target.attr("id")) {
+			case "startPoint":
+				name = "Start";
+				break;
+			case "endPoint":
+				name = "Ziel";
+				break;
+		}
+/*		var name = result.formatted_address.substring(0, result.formatted_address.indexOf(","));
+		if (name.length > 13) {
+			name = name.substring(0, 10) + "...";
+		}*/
+		var icon = new google.maps.MarkerImage(easyCab.pathMarkerUrl + name,
+				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
+				   new google.maps.Point(60, 48));
 
-	this.client.connect(this.options);
-};
+		if (easyCab.markers[$target.attr("id")]) {
+			easyCab.markers[$target.attr("id")].setMap(null);
+		}
+		var marker = new google.maps.Marker({
+			position: result.geometry.location,
+			icon: icon,
+			map: easyCab.map
+		});
+		google.maps.event.addListener(marker, "click", function() {
+			easyCab.map.setCenter(result.geometry.location);
+			easyCab.map.setZoom(16);
+		});
+		marker.setMap(easyCab.map);
+		easyCab.markers[$target.attr("id")] = marker;
+		// Draw path between start and goal if both are set
+		var start = $("#startPoint").val();
+		var end = $("#endPoint").val();
+		if (start != "" && end != "") {
+			easyCab.drawRoute(start, end);
+		}
+		easyCab.fitMapToMarkers();
+	});
+}
+
+EasyCab.prototype.drawRoute = function(start, end, taxi) {
+	var request = {
+		origin:start,
+		destination:end,
+		travelMode: google.maps.TravelMode.DRIVING,
+
+	};
+	easyCab.directionsService.route(request, function(result, status) {
+		if (status == google.maps.DirectionsStatus.OK) {
+			easyCab.directionsDisplay.setDirections(result);
+			$routeWindow = $("#routeWindow");
+			// $('#routeWindowHeader .start').text(taxi ? taxi : start.substring(0, start.indexOf(',')));
+			// $('#routeWindowHeader .end').text(end.substring(0, end.indexOf(',')));
+			$('#routeWindowHeader .start').text(taxi ? taxi : start.substring(0, start.indexOf(',')));
+			$('#routeWindowHeader .end').text(end.substring(0, end.indexOf(',')));
+			$routeWindow.show();
+			$routeWindow.on('mousemove',function(){ // Update containment each time it's dragged
+			    $(this).draggable({
+			        greedy: true, 
+			        handle: '#routeWindowHeader',
+
+			        containment: // Set containment to current viewport
+			        [$(document).scrollLeft(),
+			        $(document).scrollTop(),
+			        $(document).scrollLeft()+$(window).width()-$(this).outerWidth(),
+			        $(document).scrollTop()+$(window).height()-$(this).outerHeight()]
+			    }).resizable({
+			    	handles: 'se'
+			    });
+			})
+			easyCab.directionsDisplay.setMap(easyCab.map);
+			easyCab.fitMapToMarkers();
+		}
+	});
+}
 
 EasyCab.prototype.fitMapToMarkers = function() {
 	var bounds = new google.maps.LatLngBounds();

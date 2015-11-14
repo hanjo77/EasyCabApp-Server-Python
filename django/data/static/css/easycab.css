@@ -61,7 +61,8 @@ a.btn {
 	font-weight: normal;
 }
 
-#accordion h3 {
+#accordion h3,
+#routeWindowHeader {
 	border: 2px solid #315aa6;
 	color: #f7de94;
 	background: #315aa6; /* Old browsers */
@@ -183,6 +184,82 @@ a.btn {
 	font-size: 1em;
     width: 100%;
     margin-bottom: .5em;
+}
+
+li.showRoute a {
+	color: #f7de94;
+    text-decoration: none;
+    margin-left: 6em;
+    padding-bottom: .5em;
+    display: block;
+}
+
+li.showRoute a:hover {
+    text-decoration: underline;
+}
+
+.placeSearch {
+    margin: .4em 2%;
+    padding: 0.7em 4%;
+    width: 87%;
+    border: 1px solid #ccc;
+    border-collapse: separate;
+}
+
+#routeWindow {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	background-color: #fff;
+	width: 30%;
+	height: 50%;
+    display: none;
+    z-index: 1;
+    border: 2px solid #194184;
+    overflow: hidden;
+    padding-bottom: 1.5em;
+}
+
+#routeWindowHeader {
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: .5em 2em .5em .5em;
+    font-weight: normal;
+    border: 0;
+}
+
+#routeWindowHeader .btnClose {
+	position: absolute;
+    right: .5em;
+    top: .5em;
+    height: 1.2em;
+}
+
+#routeDisplay {
+    overflow: scroll;
+    max-height: 100%;
+}
+
+.adp-marker {
+	display: none;
+}
+
+.adp-placemark {
+    display: none;
+}
+
+.adp-directions {
+	cursor: default;
+}
+
+.ui-icon-gripsmall-diagonal-se {
+	background: url(../img/resize-handle-se.png) 0 0;
+	background-repeat: no-repeat;
+	width: 25px;
+	height: 25px;
+	position: absolute;
+    bottom: 0;
+    right: 0;
 }
 
 .ui-accordion-header-icon {

@@ -13,21 +13,27 @@
     <link href="{% static "icon/icon-normal.png" %}" rel="icon" sizes="128x128" />
     <link rel="icon" href="{% static "icon/favicon.ico" %}" type="image/x-icon; charset=binary" />
 	<link rel="stylesheet" type="text/css" href="{% static "css/easycab.css" %}">
-	<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAsz3V9X_fTjwe-TzHtuA16-wjMZ71a7gY&sensor=false"></script>
+	<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAsz3V9X_fTjwe-TzHtuA16-wjMZ71a7gY&libraries=places&sensor=false"></script>
 	<script src="{% static "js/mqttws31.js" %}"></script>
 	<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
 	<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+	<script src="{% static "js/jquery.geocomplete.js" %}"></script>
 	<script src="{% static "js/datepair.min.js" %}" type="text/javascript"></script>
 	<script src="{% static "js/jquery.datepair.min.js" %}" type="text/javascript"></script>
 	<script src="{% static "js/jquery.timepicker.min.js" %}" type="text/javascript"></script>
-	<script>
-		var markerActive = "{% marker 'static/img/marker-template-active.png' text='1' %}";
-		var markerInactive = "{% marker 'static/img/marker-template-inactive.png' text='3' hue=105 %}";
-	</script>
 	<script src="{% static "js/easycab.js" %}"></script>
 </head>
 <body>
 	<div id="menu">
+		<input type="text" class="placeSearch" id="startPoint" data-title="Start" placeholder="Start-Ort eingeben" />
+		<input type="text" class="placeSearch" id="endPoint" data-title="Ziel" placeholder="Ziel-Ort eingeben" />
+		<div id="routeWindow">
+			<div id="routeWindowHeader">
+				Route von <span class="start"></span> nach <span class="end"></span>
+				<img src="{% static "img/button-close.png" %}" class="btnClose" />
+			</div>
+			<div id="routeDisplay"></div>
+		</div>
 		<select class="displayFilter">
 			<option value="showAll">Alle anzeigen</option>
 			<option value="showActive">Aktive Fahrzeuge anzeigen</option>
