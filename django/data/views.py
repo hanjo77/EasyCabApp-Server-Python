@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import json
 import datetime
 from django.core import serializers
@@ -10,6 +12,7 @@ from data.models import Phone
 from data.models import Session
 from data.models import AppConfig
 from django import http
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 class JSONListMixin(object):
     def get(self, request, *args, **kwargs):
@@ -176,4 +179,122 @@ class PathView(generic.View):
             'lat':d['fields']['latitude'],
             'lng':d['fields']['longitude']
             } for d in raw_data], default=self.date_handler))
+
+class PositionExportFilterView(generic.list.ListView):
+    template_name = 'admin/position_export_filter.html'
+    def get_queryset(self):
+        queryset = Driver.objects.all()
+        return queryset
+
+class DriverFilterView(generic.list.ListView):
+    template_name = 'admin/driver_filter.html'
+    def get_queryset(self):
+        queryset = Session.objects.all().values('driver').distinct()
+        request = self.request.GET
+        if request.has_key('taxi[]') and request['taxi[]'] != '':
+            queryset = queryset.filter(taxi__token__in=request.getlist('taxi[]'))
+        start_date = None
+        if request.has_key('startDate') and request['startDate'] != '':
+            start_date = request['startDate'] + " "
+            if request.has_key('startTime') and request['startTime'] != '':
+                start_date += request['startTime']
+            else:
+                start_date += '00:00:00'
+        end_date = None
+        if request.has_key('endDate') and request['endDate'] != '':
+            end_date = request['endDate'] + " "
+            if request.has_key('endTime') and request['endTime'] != '':
+                end_date += request['endTime']
+            else:
+                end_date += '23:59:59'
+        if start_date:
+            queryset = queryset.filter(end_time__gte=datetime.datetime.strptime(start_date, '%d.%m.%Y %H:%M:%S'))
+        if end_date:
+            queryset = queryset.filter(start_time__lte=datetime.datetime.strptime(end_date, '%d.%m.%Y %H:%M:%S'))
+
+        queryset = Driver.objects.all().filter(id__in=queryset)
+        return queryset
+
+class TaxiFilterView(generic.list.ListView):
+    template_name = 'admin/taxi_filter.html'
+    def get_queryset(self):
+        queryset = Session.objects.all().values('taxi').distinct()
+        request = self.request.GET
+        if request.has_key('driver[]') and request['driver[]'] != '':
+            queryset = queryset.filter(driver__token__in=request.getlist('driver[]'))
+        start_date = None
+        if request.has_key('startDate') and request['startDate'] != '':
+            start_date = request['startDate'] + " "
+            if request.has_key('startTime') and request['startTime'] != '':
+                start_date += request['startTime']
+            else:
+                start_date += '00:00:00'
+        end_date = None
+        if request.has_key('endDate') and request['endDate'] != '':
+            end_date = request['endDate'] + " "
+            if request.has_key('endTime') and request['endTime'] != '':
+                end_date += request['endTime']
+            else:
+                end_date += '23:59:59'
+        if start_date:
+            queryset = queryset.filter(end_time__gte=datetime.datetime.strptime(start_date, '%d.%m.%Y %H:%M:%S'))
+        if end_date:
+            queryset = queryset.filter(start_time__lte=datetime.datetime.strptime(end_date, '%d.%m.%Y %H:%M:%S'))
+
+        queryset = Taxi.objects.all().filter(id__in=queryset)
+        request = self.request.POST
+        return queryset
+
+class DateFilterView(generic.list.ListView):
+    template_name = 'admin/date_filter.html'
+    def get_queryset(self):
+        queryset = Taxi.objects.exclude(
+            name=''
+        )
+        return queryset
+
+class PositionExportCsvView(generic.View):
+    def date_handler(self, obj):
+        return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+    def reformat_date(self, date):
+        date_array = date.split(".")
+        return date_array[2] + "-" + date_array[1] + "-" + date_array[0]
+    def post(self, request, *args, **kwargs):
+        queryset = Position.objects.all().filter(session__taxi__id=4)
+        if request.POST.has_key('taxi'):
+            queryset = queryset.filter(session__taxi__token__in=request.POST.getlist('taxi'))
+        if request.POST.has_key('driver'):
+            queryset = queryset.filter(session__driver__token__in=request.POST.getlist('driver'))
+        start_date = None
+        if request.POST.has_key('startDate') and request.POST['startDate'] != '':
+            start_date = request.POST['startDate'] + " "
+            if request.POST.has_key('startTime') and request.POST['startTime'] != '':
+                start_date += request.POST['startTime']
+            else:
+                start_date += '00:00:00'
+        end_date = None
+        if request.POST.has_key('endDate') and request.POST['endDate'] != '':
+            end_date = request.POST['endDate'] + " "
+            if request.POST.has_key('endTime') and request.POST['endTime'] != '':
+                end_date += request.POST['endTime']
+            else:
+                end_date += '23:59:59'
+        if start_date:
+            queryset = queryset.filter(time__gte=datetime.datetime.strptime(start_date, '%d.%m.%Y %H:%M:%S'))
+        if end_date:
+            queryset = queryset.filter(time__lte=datetime.datetime.strptime(end_date, '%d.%m.%Y %H:%M:%S'))
+        # Fields: Time | Driver | Taxi | Phone | Latitude | Longitude
+        position_list = [( 
+            str(d.time) + ";" +
+            (d.session.driver.firstname + " " + d.session.driver.lastname if d.session.driver else "") + ";" +
+            str(d.session.phone.name) + ";" +
+            str(d.session.taxi.name) + ";" +
+            str(d.latitude) + ";" +
+            str(d.longitude) + "\n" 
+            ) for d in queryset]
+        position_list.insert(0, "Time;Driver;Taxi;Phone;Latitude;Longitude\n".decode('utf-8'))
+        response = http.HttpResponse(position_list, content_type="text/csv; charset=utf-8")
+        response['Content-Disposition'] = 'attachment; filename="easycab-position-export.csv"'
+        return response
+
 

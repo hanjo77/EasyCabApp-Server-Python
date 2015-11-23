@@ -1,0 +1,19 @@
+<fieldset>
+	<legend>
+		Fahrzeuge
+	</legend>
+	<row class="showAll">
+		<input type ="checkbox" name="taxi" value="" class="selectAll" id="taxi_all" />
+		<label for="taxi_all">
+			Alle auswählen
+		</label>
+	</row>
+{% for taxi in object_list %}
+	<row>
+		<input type ="checkbox" name="taxi" value="{{ taxi.token }}" id="taxi{{ taxi.id }}" />
+		<label for="taxi{{ taxi.id }}">
+			{{ taxi.name }}
+		</label>
+	</row>
+{% endfor %}
+</fieldset>

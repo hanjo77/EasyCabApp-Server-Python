@@ -20,6 +20,11 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/position_export_filter', views.PositionExportFilterView.as_view(), name='position_export_filter'),
+    url(r'^admin/driver_filter', views.DriverFilterView.as_view(), name='driver_filter'),
+    url(r'^admin/taxi_filter', views.TaxiFilterView.as_view(), name='taxi_filter'),
+    url(r'^admin/date_filter', views.DateFilterView.as_view(), name='date_filter'),
+    url(r'^admin/position_export', views.PositionExportCsvView.as_view(), name='position_export'),
     url(r'^session_data/(?P<pk>[0-9]*)', views.SessionDataJsonView.as_view(), name='session_data'),
     url(r'^session/(?P<phone>[^\/]*)/(?P<taxi>[^\/]*)/(?P<driver>[^\/]*)', views.SessionJsonView.as_view(), name='session'),
     url(r'^app_config/(?P<pk>[0-9]*)', views.AppConfigJsonView.as_view(), name='app_config'),

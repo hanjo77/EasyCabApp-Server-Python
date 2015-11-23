@@ -1,0 +1,19 @@
+<fieldset>
+	<legend>
+		Fahrer
+	</legend>
+	<row class="showAll">
+		<input type ="checkbox" name="driver" value="" class="selectAll" id="driver_all" />
+		<label for="driver_all">
+			Alle auswählen
+		</label>
+	</row>
+{% for driver in object_list %}
+	<row>
+		<input type ="checkbox" name="driver" value="{{ driver.token }}" id="driver{{ driver.id }}" />
+		<label for="driver{{ driver.id }}">
+			{{ driver.firstname }} {{ driver.lastname }}
+		</label>
+	</row>
+{% endfor %}
+</fieldset>

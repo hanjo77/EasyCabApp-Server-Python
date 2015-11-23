@@ -39,7 +39,7 @@ a.btn {
 	padding-right: 2em;
 }
 
-#accordion h3, a.btn {
+#accordion h3, a.btn, fieldset.buttons input {
 	cursor: pointer;
 	font-weight: normal;
 	text-align: center;
@@ -57,12 +57,26 @@ a.btn {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
+a.btn:hover, fieldset.buttons input:hover {
+	border: 2px solid #f7de94;
+	color: #f7de94;
+	background: #315aa6; /* Old browsers */
+	background: -moz-linear-gradient(top,  #194184 0%, #315aa6 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#194184), color-stop(100%,#315aa6)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #194184 0%,#315aa6 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #194184 0%,#315aa6 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #194184 0%,#315aa6 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #194184 0%,#315aa6 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
+}
+
 #accordion h3 {
 	font-weight: normal;
 }
 
 #accordion h3,
-#routeWindowHeader {
+#routeWindowHeader,
+.exportFilter .box fieldset {
 	border: 2px solid #315aa6;
 	color: #f7de94;
 	background: #315aa6; /* Old browsers */
@@ -75,7 +89,8 @@ a.btn {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
-#accordion h3.active {
+#accordion h3.active,
+.exportFilter legend {
 	border: 2px solid #315aa6;
 	color: #315aa6;
 	background: #f7de94; /* Old browsers */
@@ -86,6 +101,10 @@ a.btn {
 	background: -ms-linear-gradient(top,  #f7de94 0%,#f8d360 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #f7de94 0%,#f8d360 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
+}
+
+.exportFilter legend {
+	padding: .5em;
 }
 
 #accordion table {
@@ -182,8 +201,16 @@ a.btn {
 
 .displayFilter {
 	font-size: 1em;
-    width: 100%;
-    margin-bottom: .5em;
+    width: 96%;
+    margin: 2%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 4%;
+}
+
+li.showRoute {
+    display: none;
 }
 
 li.showRoute a {
@@ -218,6 +245,9 @@ li.showRoute a:hover {
     border: 2px solid #194184;
     overflow: hidden;
     padding-bottom: 1.5em;
+    box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.3);
+	-moz-box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, 0.3);
 }
 
 #routeWindowHeader {
@@ -445,6 +475,60 @@ li.ui-timepicker-selected {
 	color: #315aa6;
 }
 
+.fancybox-inner body {
+	overflow: hidden;
+}
+
+.exportFilter {
+	min-height: 320px;
+}
+
+.exportFilter h2 {
+	color: #315aa6;
+    font-size: 2em;
+    font-weight: normal;
+    margin-top: 0;
+}
+
+.exportFilter .box {
+	width: 50%;
+	float: left;
+}
+
+.exportFilter row {
+	width: 50%;
+	display: block;
+	float: left;
+}
+
+.exportFilter .time,
+.exportFilter .date {
+	width: 8em;
+	padding: .5em;
+	border: 1px solid #ccc;
+}
+
+.exportFilter fieldset {
+	border: 1px solid #ccc;
+	margin-bottom: 1em;
+}
+
+.exportFilter fieldset.buttons {
+    clear: both;
+    text-align: right;
+    border: 0;
+    padding: 0;
+    padding-top: .5em;
+    display: block;
+}
+
+.exportFilter .dateFilter {
+	width: 100%;
+}
+
+.exportFilter row.showAll {
+	width: 100%;
+}
 
 /* #### Mobile Phones Portrait #### */
 @media screen and (orientation: portrait){
