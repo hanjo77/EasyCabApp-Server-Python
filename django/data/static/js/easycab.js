@@ -17,8 +17,20 @@ var EasyCab = function() {
 	this.pathMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-path-large.png" + markerParameters + "&text_colour=315aa6&text="
 	this.activeMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-active-large.png" + markerParameters + "&text_colour=315aa6&text="
 	this.inactiveMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-inactive-large.png" + markerParameters + "&text_colour=f8d360&text="
+	this.options = {
+		timeout: 3,
+		onSuccess: function () {
+			console.log("mqtt connected");
+			easyCab.client.subscribe('position', {qos: 0});
+		},
+		onFailure: function (message) {
+			alert("Connection failed: " + message.errorMessage);
+			console.log("connection failed");
+		}
+	};
 	this.client = new Paho.MQTT.Client("46.101.17.239", 10001,
 		"myclientid_" + parseInt(Math.random() * 100, 10)); 
+	this.client.connect(this.options);
 	this.directionsService = new google.maps.DirectionsService();
 	this.directionsDisplay = new google.maps.DirectionsRenderer({ 
 		suppressMarkers: true,
@@ -32,7 +44,7 @@ var EasyCab = function() {
 		console.log("connection lost");
 		easyCab.client = new Paho.MQTT.Client("46.101.17.239", 10001,
 					"myclientid_" + parseInt(Math.random() * 100, 10));
-		easyCab.client.connect(this.options);
+		easyCab.client.connect(easyCab.options);
 	};
 
 	this.client.onMessageArrived = function (message) {
@@ -47,18 +59,6 @@ var EasyCab = function() {
 				myObj.gps.latitude,
 				myObj.gps.longitude,
 				recievedmsg); //add marker based on lattitude and longittude, using timestamp for description for now
-		}
-	};
-
-	this.options = {
-		timeout: 3,
-		onSuccess: function () {
-			console.log("mqtt connected");
-			easyCab.client.subscribe('position', {qos: 0});
-		},
-		onFailure: function (message) {
-			alert("Connection failed: " + message.errorMessage);
-			console.log("connection failed");
 		}
 	};
 

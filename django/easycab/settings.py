@@ -40,7 +40,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'corsheaders',
     'markers',
-    'import_export',
 )
 
 MIDDLEWARE_CLASSES = (

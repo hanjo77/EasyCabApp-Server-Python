@@ -1,6 +1,6 @@
 var PositionExportFilter = function() {
 
-	this.djangoRootPath = "http://localhost:8000/admin";
+	this.djangoRootPath = "http://46.101.17.239/data/admin";
 	// this.djangoRootPath = "http://localhost:8000";
 	$(document).ready(function() {
 	    exportFilter.populateElement('.driverFilter', '/driver_filter')

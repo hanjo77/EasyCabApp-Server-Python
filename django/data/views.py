@@ -260,7 +260,7 @@ class PositionExportCsvView(generic.View):
         date_array = date.split(".")
         return date_array[2] + "-" + date_array[1] + "-" + date_array[0]
     def post(self, request, *args, **kwargs):
-        queryset = Position.objects.all().filter(session__taxi__id=4)
+        queryset = Position.objects.all()
         if request.POST.has_key('taxi'):
             queryset = queryset.filter(session__taxi__token__in=request.POST.getlist('taxi'))
         if request.POST.has_key('driver'):
@@ -292,7 +292,7 @@ class PositionExportCsvView(generic.View):
             str(d.latitude) + ";" +
             str(d.longitude) + "\n" 
             ) for d in queryset]
-        position_list.insert(0, "Time;Driver;Taxi;Phone;Latitude;Longitude\n".decode('utf-8'))
+        position_list.insert(0, "Zeit;Fahrer;Fahrzeug;Telefon;Längengrad;Breitengrad\n".decode('utf-8'))
         response = http.HttpResponse(position_list, content_type="text/csv; charset=utf-8")
         response['Content-Disposition'] = 'attachment; filename="easycab-position-export.csv"'
         return response
