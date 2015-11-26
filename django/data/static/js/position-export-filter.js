@@ -1,7 +1,10 @@
-var PositionExportFilter = function() {
+/*!
+ * position-export-filter.js v1.0
+ * Class to control the position export filter of the EasyCab Application
+ * on Google Maps.
+ */
 
-	this.djangoRootPath = "http://46.101.17.239/data/admin";
-	// this.djangoRootPath = "http://localhost:8000";
+ var PositionExportFilter = function() {
 	$(document).ready(function() {
 	    exportFilter.populateElement('.driverFilter', '/driver_filter')
 	    exportFilter.populateElement('.taxiFilter', '/taxi_filter')
@@ -9,6 +12,11 @@ var PositionExportFilter = function() {
 	});
 }
 
+/**
+ * Populates container with snippet from URL
+ * @param {String} selector CSS-selector of the container to populate
+ * @param {String} url URL of snippet
+ */
 PositionExportFilter.prototype.populateElement = function(selector, url) {
 	var selectedTaxis = [];
     $('.taxiFilter input:checked').each(function() {
@@ -47,7 +55,7 @@ PositionExportFilter.prototype.populateElement = function(selector, url) {
     	endDate = null;
     }
 	$.ajax({
-        url: exportFilter.djangoRootPath + url,
+        url: EasyCabUtil.adminRootPath + url,
         method: "GET",
         data: {
         	'taxi': selectedTaxis,
@@ -67,27 +75,7 @@ PositionExportFilter.prototype.populateElement = function(selector, url) {
         			$(selector + " [name='" + name + "']:checked").trigger("click");
         		}
         	});
-			$(selector + ' .time').timepicker({
-		        'timeFormat': 'H:i:s'
-		    });
-
-		    $(selector + ' .date').datepicker({
-			    'closeText': 'schliessen',
-			    'prevText': 'zurück',
-			    'nextText': 'weiter',
-			    'currentText': 'Heute',
-			    'dateFormat': 'dd.mm.yy',
-			    'monthNames': ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
-			    'dayNames': ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag','Samstag'],
-			    'dayNamesMin': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
-		        'autoclose': true,
-				onClose: function(selectedDate) {
-					// $(this).parent().find(".time").trigger("click");
-					$(".to_date").datepicker("option", "minDate", selectedDate);
-					return $(".to_date").datepicker("show");
-				}		    
-			});
-
+        	EasyCabUtil.initDateTimePicker(selector);
 			switch(selector) {
 				case '.driverFilter':
 					$(selector + ' input').click(function(event) {
@@ -118,26 +106,5 @@ PositionExportFilter.prototype.populateElement = function(selector, url) {
     });	
 }
 
-PositionExportFilter.prototype.formatDateTime = function(timeString) {
-	var date = this.parseDateTimeString(timeString);
-	return ('0' + date.getDate()).slice(-2) + '.'
-		+ ('0' + (date.getMonth()+1)).slice(-2) + '.'
-		+ date.getFullYear() + " "
-		+ ('0' + date.getHours()).slice(-2) + ':'
-		+ ('0' + date.getMinutes()).slice(-2) + ':'
-		+ ('0' + date.getSeconds()).slice(-2);
-}
-
-PositionExportFilter.prototype.parseDateTimeString = function(timeString) {
-	var dateArray = timeString.split(/[\s,T,\-,\.,\:]/);
-	return new Date(
-		parseInt(dateArray[0], 10), 
-		parseInt(dateArray[1], 10)-1, 
-		parseInt(dateArray[2], 10), 
-		parseInt(dateArray[3], 10), 
-		parseInt(dateArray[4], 10), 
-		parseInt(dateArray[5], 0)
-		);
-}
-
+// Instanciate PositionExportFilter object
 var exportFilter = new PositionExportFilter();

@@ -1,22 +1,34 @@
-var EasyCab = function() {
+/*!
+ * easycab.js v1.0
+ * Class to display and edit information of the EasyCab Application
+ * on Google Maps.
+ */
 
-	this.djangoRootPath = "http://46.101.17.239/data";
-	// this.djangoRootPath = "http://localhost:8000";
-	this.map = null;
-	this.directionsService = new google.maps.DirectionsService();
-	this.directionsDisplay = new google.maps.DirectionsRenderer();
-	this.inactiveTimeout = 60;
+ var EasyCab = function() {
 	this.activeMarker = null;
 	this.markers = {};
 	this.goalMarker = {};
 	this.timeouts = {};
 	this.database = {};
 	this.path;
+	// Define base-URLs for marker-icons
 	var markerParameters = "?text_size=46" +
 						"&text_y=19";
-	this.pathMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-path-large.png" + markerParameters + "&text_colour=315aa6&text="
-	this.activeMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-active-large.png" + markerParameters + "&text_colour=315aa6&text="
-	this.inactiveMarkerUrl = this.djangoRootPath + "/map_marker/img/marker-template-inactive-large.png" + markerParameters + "&text_colour=f8d360&text="
+	this.pathMarkerUrl = EasyCabUtil.djangoRootPath + "/map_marker/img/marker-template-path-large.png" + markerParameters + "&text_colour=315aa6&text="
+	this.activeMarkerUrl = EasyCabUtil.djangoRootPath + "/map_marker/img/marker-template-active-large.png" + markerParameters + "&text_colour=315aa6&text="
+	this.inactiveMarkerUrl = EasyCabUtil.djangoRootPath + "/map_marker/img/marker-template-inactive-large.png" + markerParameters + "&text_colour=f8d360&text="
+	// Define map property and initialize map helper classes
+	this.map = null;
+	this.directionsService = new google.maps.DirectionsService();
+	this.directionsDisplay = new google.maps.DirectionsRenderer({ 
+		suppressMarkers: true,
+		suppressInfoWindows: true,
+		polylineOptions: {
+			strokeColor: '#f8d360',
+			strokeWeight: 5
+		}
+	});
+	// Define MQTT options and initialize MQTT client
 	this.options = {
 		timeout: 3,
 		onSuccess: function () {
@@ -28,23 +40,10 @@ var EasyCab = function() {
 			console.log("connection failed");
 		}
 	};
-	this.client = new Paho.MQTT.Client("46.101.17.239", 10001,
-		"myclientid_" + parseInt(Math.random() * 100, 10)); 
-	this.client.connect(this.options);
-	this.directionsService = new google.maps.DirectionsService();
-	this.directionsDisplay = new google.maps.DirectionsRenderer({ 
-		suppressMarkers: true,
-		suppressInfoWindows: true,
-		polylineOptions: {
-			strokeColor: '#f8d360',
-			strokeWeight: 5
-		}
-	});
+	this.initMqttClient();
+
 	this.client.onConnectionLost = function (responseObject) {
-		console.log("connection lost");
-		easyCab.client = new Paho.MQTT.Client("46.101.17.239", 10001,
-					"myclientid_" + parseInt(Math.random() * 100, 10));
-		easyCab.client.connect(easyCab.options);
+		easyCab.initMqttClient();
 	};
 
 	this.client.onMessageArrived = function (message) {
@@ -73,9 +72,21 @@ var EasyCab = function() {
 	});
 }
 
+/**
+ * Initializes MQTT client
+ */
+EasyCab.prototype.initMqttClient = function() {
+	this.client = new Paho.MQTT.Client(EasyCabUtil.mqttUrl, EasyCabUtil.mqttPort,
+		"myclientid_" + parseInt(Math.random() * 100, 10)); 
+	this.client.connect(this.options);
+}
+
+/**
+ * Initializes menu with Taxi entries
+ */
 EasyCab.prototype.initMenu = function() {
 	$.ajax({
-        url: easyCab.djangoRootPath + "/menu",
+        url: EasyCabUtil.djangoRootPath + "/menu",
         success: function( data ) {
         	$('#accordion').html(data);
         	$('#accordion').accordion({
@@ -106,6 +117,9 @@ EasyCab.prototype.initMenu = function() {
 	});
 }
 
+/**
+ * Hides path on map
+ */
 EasyCab.prototype.hidePath = function() {
 	$('.dateRow').hide();
 	if (this.path) {
@@ -113,6 +127,10 @@ EasyCab.prototype.hidePath = function() {
 	}
 }
 
+/**
+ * Removes marker from map
+ * @param {String} key Key of the marker in markers object
+ */
 EasyCab.prototype.removeMarker = function(key) {
 	var marker = this.markers[key];
 	if (marker) {
@@ -124,31 +142,16 @@ EasyCab.prototype.removeMarker = function(key) {
 	$("h3.car" + this.database.taxis[key]).removeClass("active");
 }
 
+/**
+ * Refreshes accordion after changes on markup
+ * @param {String} parentSelector CSS selector of the accordion container
+ */
 EasyCab.prototype.refreshAccordion = function(parentSelector) {
 	if (parentSelector && (parentSelector != "")) {
 		parentSelector += " ";
 	}
 
-	$(parentSelector + '.pathForm .time').timepicker({
-        'timeFormat': 'H:i:s'
-    });
-
-    $(parentSelector + '.pathForm .date').datepicker({
-	    'closeText': 'schliessen',
-	    'prevText': 'zurück',
-	    'nextText': 'weiter',
-	    'currentText': 'Heute',
-	    'dateFormat': 'dd.mm.yy',
-	    'monthNames': ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
-	    'dayNames': ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag','Samstag'],
-	    'dayNamesMin': ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
-        'autoclose': true,
-		onClose: function(selectedDate) {
-			// $(this).parent().find(".time").trigger("click");
-			$(".to_date").datepicker("option", "minDate", selectedDate);
-			return $(".to_date").datepicker("show");
-			}		    
-		});
+    EasyCabUtil.initDateTimePicker(parentSelector);
 
     $(parentSelector + '.dateRow').hide();
 
@@ -157,7 +160,7 @@ EasyCab.prototype.refreshAccordion = function(parentSelector) {
     	if($target.is(':checked')) {
 	    	$target.parent().parent().find('.dateRow').show();
 	    	var date = new Date();
-	    	var dateArray = easyCab.formatDateTime($.datepicker.formatDate('yy-mm-dd', date)
+	    	var dateArray = EasyCabUtil.formatDateTime($.datepicker.formatDate('yy-mm-dd', date)
 	    		+ " " 
 	    		+ date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()).split(" ");
 	    	$target.parent().parent().find('.date').val(dateArray[0]);
@@ -181,7 +184,7 @@ EasyCab.prototype.refreshAccordion = function(parentSelector) {
     	var taxiId = $localRoot.attr('data-id');
     	// http://localhost:8000/path/19.10.2015%2000:00:00/20.10.2015%2001:00:00/1
 		$.ajax({
-	        url: easyCab.djangoRootPath + "/path/" + startTime + "/" + endTime + "/" + taxiId,
+	        url: EasyCabUtil.djangoRootPath + "/path/" + startTime + "/" + endTime + "/" + taxiId,
 	        success: function( data ) {
 	        	if (easyCab.path) {
 	        		easyCab.path.setMap(null);
@@ -236,6 +239,9 @@ EasyCab.prototype.refreshAccordion = function(parentSelector) {
 	});
 }
 
+/**
+ * Displays markers of all taxis on map
+ */
 EasyCab.prototype.showAll = function() {
     $(".ui-accordion-header-active").trigger('click');
 	for (var key in this.markers) {
@@ -252,6 +258,9 @@ EasyCab.prototype.showAll = function() {
 	$("#accordion").find("h3:visible").first().click();
 }
 
+/**
+ * Displays only markers of active taxis on map
+ */
 EasyCab.prototype.showActive = function() {
     $(".ui-accordion-header-active").trigger('click');
 	for (var key in this.markers) {
@@ -270,6 +279,9 @@ EasyCab.prototype.showActive = function() {
 	$("#accordion").find("h3:visible").first().click();
 }
 
+/**
+ * Displays only markers of inactive taxis on map
+ */
 EasyCab.prototype.showInactive = function() {
     $(".ui-accordion-header-active").trigger('click');
 	for (var key in this.markers) {
@@ -288,6 +300,12 @@ EasyCab.prototype.showInactive = function() {
 	$("#accordion").find("h3:visible").first().click();
 }
 
+/**
+ * Adds a new marker to markers object (if not exists already) and displays it on map
+ * @param {float} lat Latitude
+ * @param {float} lng Longitude
+ * @param {string} info Additional data JSON string
+ */
 EasyCab.prototype.addMarker = function(lat, lng, info) {
 	var data = jQuery.parseJSON(info);
 	var pt = new google.maps.LatLng(lat, lng);
@@ -298,7 +316,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
-		if (!data.time || (new Date()-this.parseDateTimeString(data.time) > this.inactiveTimeout*1000)) {
+		if (!data.time || (new Date()-EasyCabUtil.parseDateTimeString(data.time) > EasyCabUtil.inactiveTimeout*1000)) {
 			icon = new google.maps.MarkerImage(this.inactiveMarkerUrl + this.database.taxis[data.car],
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
@@ -315,7 +333,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 
 			if ($('.car' + this.database.taxis[data.car]).length <= 0) {
 				$.ajax({
-			        url: this.djangoRootPath + "/menu/" + data.car,
+			        url: EasyCabUtil.djangoRootPath + "/menu/" + data.car,
 			        success: function( data ) {
 			            $('#accordion').append(data);
 			            $("h3").click(function(event) {
@@ -356,9 +374,9 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	this.fitMapToMarkers();
 
 	if (data.time && 
-		(new Date() - this.parseDateTimeString(data.time) < 60000)) {
+		(new Date() - EasyCabUtil.parseDateTimeString(data.time) < 60000)) {
 
-		$(".car" + this.database.taxis[data.car] + " *[data-key='time']").html(this.formatDateTime(data.time));
+		$(".car" + this.database.taxis[data.car] + " *[data-key='time']").html(EasyCabUtil.formatDateTime(data.time));
 		$(".car" + this.database.taxis[data.car] + " *[data-key='driver']").html(this.getDriverNameFromToken(data.driver));
 		$(".car" + this.database.taxis[data.car] + " *[data-key='phone']").html(this.getPhoneNumberFromMac(data.phone));
 		$(".car" + this.database.taxis[data.car] + " *[data-key='gps.latitude']").html(data.gps.latitude);
@@ -369,16 +387,16 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	$("*[data-key='driver']").each(function(index, object) {
 		if ($.trim($(object).html()) == "") {
 			$.ajax({
-		        url: easyCab.djangoRootPath + "/drivers",
+		        url: EasyCabUtil.djangoRootPath + "/drivers",
 		        success: function( data ) {
 		            $(object).html(data);
 		            $(".driver select").change(function(event) {
 		            	var oldId = $(event.target).parent().attr("data-id");
 		            	var id = $(event.target).val();
 		            	var driverName = event.target.options[event.target.selectedIndex].innerHTML;
-		            	if (id != "" && window.confirm("Wollen Sie wirklich den Fahrer auf " + driverName + " ändern?")) {	            		
+		            	if (id != "") {	            		
 			            	var taxi = $(event.target).parent().parent().parent().parent().parent().prev().attr("data-key");
-			            	$.ajax({ url: easyCab.djangoRootPath + "/driver_change/" + taxi + "/" + id });
+			            	$.ajax({ url: EasyCabUtil.djangoRootPath + "/driver_change/" + taxi + "/" + id });
 			            	$(event.target).parent().attr("data-id", id);
 			            	$(event.target).parent().html(driverName);
 		            	}
@@ -401,16 +419,25 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	this.refreshAccordion(".car" + this.database.taxis[data.car]);
 };
 
+/**
+ * Places all markers on map
+ */
 EasyCab.prototype.placeMarkers = function() {
 	for (var marker in this.markers) {
 		this.markers[marker].setMap(this.map);
 	}
 }
 
+/**
+ * Sorting function to sort items by class (1) and tag-name (2) for accordion-menu
+ */
 EasyCab.prototype.sortByTagAndClass = function(a, b) {
     return (a.className < b.className || a.tagName > b.tagName);
 }
 
+/**
+ * Initializes map
+ */
 EasyCab.prototype.initMap = function() {
 	var mapOptions = {
 		zoom: 10,
@@ -491,10 +518,6 @@ EasyCab.prototype.initMap = function() {
 				name = "Ziel";
 				break;
 		}
-/*		var name = result.formatted_address.substring(0, result.formatted_address.indexOf(","));
-		if (name.length > 13) {
-			name = name.substring(0, 10) + "...";
-		}*/
 		var icon = new google.maps.MarkerImage(easyCab.pathMarkerUrl + name,
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
@@ -524,6 +547,12 @@ EasyCab.prototype.initMap = function() {
 	});
 }
 
+/**
+ * Draws a route on map
+ * @param {String} start Start-position location string
+ * @param {String} end End-position location string
+ * @param {String} taxi Taxi name (optional to set current location of taxi as start-location) 
+ */
 EasyCab.prototype.drawRoute = function(start, end, taxi) {
 	var request = {
 		origin:start,
@@ -536,8 +565,6 @@ EasyCab.prototype.drawRoute = function(start, end, taxi) {
 		if (status == google.maps.DirectionsStatus.OK) {
 			easyCab.directionsDisplay.setDirections(result);
 			$routeWindow = $("#routeWindow");
-			// $('#routeWindowHeader .start').text(taxi ? taxi : start.substring(0, start.indexOf(',')));
-			// $('#routeWindowHeader .end').text(end.substring(0, end.indexOf(',')));
 			$('#routeWindowHeader .start').text(taxi ? taxi : start.substring(0, start.indexOf(',')));
 			$('#routeWindowHeader .end').text(end.substring(0, end.indexOf(',')));
 			$routeWindow.show();
@@ -561,6 +588,9 @@ EasyCab.prototype.drawRoute = function(start, end, taxi) {
 	});
 }
 
+/**
+ * Positions and zooms map to fit to all visible markers
+ */
 EasyCab.prototype.fitMapToMarkers = function() {
 	var bounds = new google.maps.LatLngBounds();
 	for(i in this.markers) {
@@ -569,6 +599,9 @@ EasyCab.prototype.fitMapToMarkers = function() {
 	this.map.fitBounds(bounds);
 }
 
+/**
+ * Repositions and scales elements when window is resized
+ */
 EasyCab.prototype.updateSize = function() {
 	var mapWidth = $(window).width();
 	var mapHeight = $(window).height();
@@ -584,10 +617,13 @@ EasyCab.prototype.updateSize = function() {
 	});
 }
 
+/**
+ * Loads taxis, drivers and phones from database to be used as a JavaScript-object
+ */
 EasyCab.prototype.getDatabase = function() {
 	this.database = {};
 	$.ajax({
-		url: this.djangoRootPath + "/json_data"
+		url: EasyCabUtil.djangoRootPath + "/json_data"
 	})
 	.done(function( data ) {
 		easyCab.database = $.parseJSON(data);
@@ -597,6 +633,12 @@ EasyCab.prototype.getDatabase = function() {
 	});
 }
 
+/**
+ * Loads a driver object by NFC-token UUID
+ * @param {String} token NFC-token UUID of the driver
+ * @returns Driver object if successful, otherwise token-string
+ * @type object
+ */
 EasyCab.prototype.getDriverNameFromToken = function(token) {
 	if (this.database && this.database.drivers && this.database.drivers[token]) {
 		return this.database.drivers[token];
@@ -604,6 +646,12 @@ EasyCab.prototype.getDriverNameFromToken = function(token) {
 	return token;
 }
 
+/**
+ * Loads a phone object by MAC-address
+ * @param {String} mac_addr MAC-address of the phone
+ * @returns Phone object if successful, otherwise token-string
+ * @type object
+ */
 EasyCab.prototype.getPhoneNumberFromMac = function(mac_addr) {
 	if (this.database && this.database.phones && this.database.phones[mac_addr]) {
 		return this.database.phones[mac_addr].number;
@@ -611,26 +659,5 @@ EasyCab.prototype.getPhoneNumberFromMac = function(mac_addr) {
 	return mac_addr;
 }
 
-EasyCab.prototype.formatDateTime = function(timeString) {
-	var date = this.parseDateTimeString(timeString);
-	return ('0' + date.getDate()).slice(-2) + '.'
-		+ ('0' + (date.getMonth()+1)).slice(-2) + '.'
-		+ date.getFullYear() + " "
-		+ ('0' + date.getHours()).slice(-2) + ':'
-		+ ('0' + date.getMinutes()).slice(-2) + ':'
-		+ ('0' + date.getSeconds()).slice(-2);
-}
-
-EasyCab.prototype.parseDateTimeString = function(timeString) {
-	var dateArray = timeString.split(/[\s,T,\-,\.,\:]/);
-	return new Date(
-		parseInt(dateArray[0], 10), 
-		parseInt(dateArray[1], 10)-1, 
-		parseInt(dateArray[2], 10), 
-		parseInt(dateArray[3], 10), 
-		parseInt(dateArray[4], 10), 
-		parseInt(dateArray[5], 0)
-		);
-}
-
+// Instanciate EasyCab object
 var easyCab = new EasyCab();

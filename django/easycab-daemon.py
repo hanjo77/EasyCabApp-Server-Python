@@ -22,13 +22,14 @@ logging.basicConfig(level=logging.INFO,
     filename='/var/log/easycabd.log',
     filemode='w')
 
-# Constructor
 class EasyCabListener(object):
-    # Initializes daemon
+    """ Constructor """
     def __init__(self):
+        """ Initializes daemon """
         self.client = []
 
     def run(self):
+        """ The main method """
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -38,15 +39,15 @@ class EasyCabListener(object):
         while True:
             pass
 
-    # The callback for when the client receives a CONNACK response from the server.
     def on_connect(self, client, userdata, flags, rc):
+        """ The callback for when the client receives a CONNACK response from the server. """
         logging.info('Connected with result code '+str(rc))
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
         client.subscribe('presence')
 
-    # The callback for when a PUBLISH message is received from the server.
     def on_message(self, client, userdata, msg):
+        """ The callback for when a PUBLISH message is received from the server. """
         data = json.loads(msg.payload)
         try:
             session_id = data['session']
