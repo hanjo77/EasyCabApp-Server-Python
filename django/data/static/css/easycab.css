@@ -14,6 +14,7 @@ table th {
 	height: 800px;
 	border: 0;
 	padding: 0;
+	position: absolute;
 }
 
 #menu {
@@ -68,6 +69,10 @@ a.btn:hover, fieldset.buttons input:hover {
 	background: -ms-linear-gradient(top,  #194184 0%,#315aa6 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  #194184 0%,#315aa6 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
+}
+
+#accordion {
+	background: #315aa6;
 }
 
 #accordion h3 {

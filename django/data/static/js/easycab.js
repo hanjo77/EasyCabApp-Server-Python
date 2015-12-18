@@ -88,11 +88,14 @@ EasyCab.prototype.initMenu = function() {
 	$.ajax({
         url: EasyCabUtil.djangoRootPath + "/menu",
         success: function( data ) {
+        	// Add and initialize accordion
         	$('#accordion').html(data);
         	$('#accordion').accordion({
         		collapsible: true,
-        		active: false
+        		active: false,
+
         	});
+        	// Add map markers for all accordion entries
 			$('#accordion h3').each(function(index, object) {
 				var $object = $(object);
 				var latlng = $object.attr("data-position").split(",");
@@ -103,17 +106,14 @@ EasyCab.prototype.initMenu = function() {
 				}
 			});
 			$("#accordion").accordion("refresh");
-			$("#accordion").find("h3").first().click();
-        },
-        error: function( data ) {
-        	easyCab.initMenu();
+			// $("#accordion").find("h3").first().click(); // Open first accordion entry on start.
         }
     });
 	$(".displayFilter").change(function(event) {
-		eval("easyCab." + $(event.target).val() + "()");
+		easyCab.filterView($(event.target).val());
 	});
 	$(".displayFilter").click(function(event) {
-		eval("easyCab." + $(event.target).val() + "()");
+		easyCab.filterView($(event.target).val());
 	});
 }
 
@@ -202,26 +202,30 @@ EasyCab.prototype.refreshAccordion = function(parentSelector) {
 	    });
     });
 
-	$("h3" + parentSelector).click(function(event) {
+	// MouseDown event for accordion headers (Click event is triggered too late, so MouseDown is required)
+	$("#accordion h3" + parentSelector).mousedown(function(event) {
 		var $target = $(event.target);
 		var $container = $target.next();
-		if ($target.hasClass("ui-state-active")) {
-			var targetId = $target.attr("data-key");
-			if (easyCab.markers[targetId]) {
-				new google.maps.event.trigger(easyCab.markers[targetId], 'click');
-			}
-		}
-		else {
+		if ($target.hasClass("ui-accordion-header-active")) {
+			// accordion item is active and will close, reset map and active marker
 			easyCab.activeMarker = null;
-			var $activeContainer = $('h3.ui-state-active').next();
+			var $activeContainer = $container;
 			var $showPath = $activeContainer.find('.showPath input');
 			if ($showPath[0] && $showPath[0].checked) {
 				$showPath.trigger('click');
 			}
 			easyCab.fitMapToMarkers();
 		}
+		else {
+			// accordion item is not active and will open, trigger click on related marker
+			var targetId = $target.attr("data-key");
+			if (easyCab.markers[targetId]) {
+				new google.maps.event.trigger(easyCab.markers[targetId], 'click');
+			}
+		}
 	});
 
+	// Click event on link to draw route from taxi to a destination place
 	$(parentSelector + ".showRoute a").click(function(event) {
 		var $target = $(event.target);
 		var $container = $target.parents(".ui-accordion-content");
@@ -229,6 +233,7 @@ EasyCab.prototype.refreshAccordion = function(parentSelector) {
 			parseFloat($container.find('span[data-key="gps.latitude"]').text()),
 			parseFloat($container.find('span[data-key="gps.longitude"]').text())
 		);
+		// If no destination point is found, try using the start point as destination
 		var end = $("#endPoint").val();
 		if (end == "") {
 			end = $("#startPoint").val();
@@ -239,63 +244,53 @@ EasyCab.prototype.refreshAccordion = function(parentSelector) {
 	});
 }
 
-/**
- * Displays markers of all taxis on map
- */
-EasyCab.prototype.showAll = function() {
-    $(".ui-accordion-header-active").trigger('click');
-	for (var key in this.markers) {
-		var $header = $("h3.car"+this.database.taxis[key]);
-		$(".car"+this.database.taxis[key]).show();
-		this.markers[key].setMap(this.map);
-	}
-	this.fitMapToMarkers();
-	$("#accordion").accordion({
-        collapsible: true,
-        active: false
-    });
-	$("#accordion").accordion("refresh");
-	$("#accordion").find("h3:visible").first().click();
-}
 
 /**
- * Displays only markers of active taxis on map
+ * Filters the map overview to display all, active or inactive taxis
+ * @param {float} value filter value, either "showAll", "showActive" or "showInactive"
  */
-EasyCab.prototype.showActive = function() {
+EasyCab.prototype.filterView = function(value) {
     $(".ui-accordion-header-active").trigger('click');
-	for (var key in this.markers) {
-		var $header = $("h3.car"+this.database.taxis[key]);
-		if ($header.hasClass("active")) {
-			$(".car"+this.database.taxis[key]).show();
-			this.markers[key].setMap(this.map);
-		}
-		else {
-			$(".car"+this.database.taxis[key]).hide();
-			this.markers[key].setMap(null);
-		}
+	switch (value) {
+		case "showAll":
+			for (var key in this.markers) {
+				var $header = $("h3.car"+this.database.taxis[key]);
+				$(".car"+this.database.taxis[key]).show();
+				this.markers[key].setMap(this.map);
+			}
+			$("#accordion").accordion({
+		        collapsible: true,
+		        active: false
+		    });
+			break;
+		case "showActive":
+			for (var key in this.markers) {
+				var $header = $("h3.car"+this.database.taxis[key]);
+				if ($header.hasClass("active")) {
+					$(".car"+this.database.taxis[key]).show();
+					this.markers[key].setMap(this.map);
+				}
+				else {
+					$(".car"+this.database.taxis[key]).hide();
+					this.markers[key].setMap(null);
+				}
+			}
+			break;
+		case "showInactive":
+			for (var key in this.markers) {
+				var $header = $("h3.car"+this.database.taxis[key]);
+				if ($header.hasClass("active")) {
+					$(".car"+this.database.taxis[key]).hide();
+					this.markers[key].setMap(null);
+				}
+				else {
+					$(".car"+this.database.taxis[key]).show();
+					this.markers[key].setMap(this.map);
+				}
+			}
+			break;
 	}
-	this.fitMapToMarkers();
-	$("#accordion").accordion("refresh");
-	$("#accordion").find("h3:visible").first().click();
-}
-
-/**
- * Displays only markers of inactive taxis on map
- */
-EasyCab.prototype.showInactive = function() {
-    $(".ui-accordion-header-active").trigger('click');
-	for (var key in this.markers) {
-		var $header = $("h3.car"+this.database.taxis[key]);
-		if ($header.hasClass("active")) {
-			$(".car"+this.database.taxis[key]).hide();
-			this.markers[key].setMap(null);
-		}
-		else {
-			$(".car"+this.database.taxis[key]).show();
-			this.markers[key].setMap(this.map);
-		}
-	}
-	this.fitMapToMarkers();
+    this.fitMapToMarkers();
 	$("#accordion").accordion("refresh");
 	$("#accordion").find("h3:visible").first().click();
 }
@@ -336,19 +331,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 			        url: EasyCabUtil.djangoRootPath + "/menu/" + data.car,
 			        success: function( data ) {
 			            $('#accordion').append(data);
-			            $("h3").click(function(event) {
-							var $target = $(event.target);
-							if ($target.hasClass("ui-state-active")) {
-								var targetId = $target.attr("data-key");
-								if (easyCab.markers[targetId]) {
-									new google.maps.event.trigger(easyCab.markers[targetId], 'click');
-								}
-							}
-							else {
-								easyCab.activeMarker = null;
-								easyCab.fitMapToMarkers();
-							}
-						});
+			            easyCab.refreshAccordion();
 			        }
 			    });			
 			}
@@ -605,13 +588,22 @@ EasyCab.prototype.fitMapToMarkers = function() {
 EasyCab.prototype.updateSize = function() {
 	var mapWidth = $(window).width();
 	var mapHeight = $(window).height();
-	if(window.innerHeight < window.innerWidth) {
+	var mapPosY = 0;
+	if(mapHeight < mapWidth) {
 		mapWidth -= $("#menu").outerWidth();
 	}
 	else {
-		mapHeight -= $("#menu").outerHeight();
+		mapHeight = mapWidth;
+		mapPosY = $("#menu").outerHeight();
+	}
+	if (easyCab.activeMarker) {
+		new google.maps.event.trigger(this.markers[this.activeMarker], 'click');
+	}
+	else {
+		easyCab.fitMapToMarkers();
 	}
 	$("#map").css({
+		top: mapPosY,
 		width: mapWidth,
 		height: mapHeight
 	});

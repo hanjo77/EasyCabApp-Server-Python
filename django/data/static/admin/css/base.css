@@ -876,7 +876,11 @@ table#change-history tbody th {
     color: #666;
 }
 
-a.btn {
+button.button {
+    padding: .5em !important;
+}
+
+a.btn, button.button {
     font-size: 1.2em;
     text-decoration: none;
     padding-left: 2em;
@@ -898,7 +902,7 @@ a.btn {
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
-a.btn:hover {
+a.btn:hover, button.button:hover {
     border: 2px solid #f7de94;
     color: #f7de94 !important;
     background: #315aa6; /* Old browsers */
