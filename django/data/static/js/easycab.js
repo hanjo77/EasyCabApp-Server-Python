@@ -69,6 +69,11 @@
 		$(window).resize(function() {
 			easyCab.updateSize();
 		});
+		$(document).scroll(function() {
+			$("#map").css({
+				"top": $(document).scrollTop()+"px"
+			});
+		});
 	});
 }
 
