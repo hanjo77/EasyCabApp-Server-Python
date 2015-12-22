@@ -52,6 +52,8 @@ class Position(models.Model):
 class AppConfig(models.Model):
     position_update_interval = models.IntegerField("Aktualisierungs-Intervall in Sekunden")
     maximal_data_storage_days = models.IntegerField("Tage, nach welchen Positions-Daten gelöscht werden")
+    encryption_key = models.CharField("Schlüsselwort für die Datenübertragung", max_length=255)
+    session_timeout = models.IntegerField("Session-Timeout in Sekunden")
     class Meta:
         verbose_name = "Applikations-Konfiguration"
         verbose_name_plural = "Applikations-Konfigurationen"

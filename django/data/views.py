@@ -15,19 +15,16 @@ from django import http
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 class JSONListMixin(object):
-    """ Mixin-Class for JSON string list output """
     def get(self, request, *args, **kwargs):
         raw_data = serializers.serialize('python', self.get_queryset())
         return http.HttpResponse(json.dumps([d['fields'] for d in raw_data]))
 
 class JSONDetailMixin(object):
-    """ Mixin-Class for JSON string detail output, if only one object is expected """
     def get(self, request, *args, **kwargs):
         raw_data = serializers.serialize('python', self.get_queryset())
         return http.HttpResponse(json.dumps([d['fields'] for d in raw_data][0]))
 
 class MenuView(generic.list.ListView):
-    """ Returns markup for menu with accordion entries or only one entry if taxi parameter is submitted. """
     template_name = "data/position_list.html"
     def get_queryset(self):
         queryset = []
@@ -47,7 +44,6 @@ class MenuView(generic.list.ListView):
         return queryset
 
 class DriverSelectionView(generic.list.ListView):
-    """ Returns dropdown markup for driver selection """
     def get_queryset(self):
         queryset = Driver.objects.exclude(
             firstname='', 
@@ -56,13 +52,11 @@ class DriverSelectionView(generic.list.ListView):
         return queryset
 
 class AppConfigJsonView(JSONDetailMixin, generic.DetailView):
-    """ Returns AppConfig Table as JSON string """
     def get_queryset(self):
         queryset = AppConfig.objects.all()
         return queryset
 
 class DataJsonView(generic.View):
-    """ Returns taxis, drivers and phones as JSON string """
     def get(self, request, *args, **kwargs):
         taxis = serializers.serialize('python', Taxi.objects.all())
         drivers = serializers.serialize('python', Driver.objects.all())
@@ -81,7 +75,6 @@ class DataJsonView(generic.View):
         return http.HttpResponse(json.dumps(raw_data))
 
 class TokenValidateJsonView(generic.View):
-    """ Validates a NFC token and returns either taxi or driver object or empty list """
     def get(self, request, *args, **kwargs):
         queryset = Driver.objects.filter(token=self.kwargs['token'])
         raw_data = {};
@@ -95,7 +88,6 @@ class TokenValidateJsonView(generic.View):
         return http.HttpResponse(json.dumps(raw_data))
 
 class PhoneValidateJsonView(generic.View):
-    """ Validates phone MAC address and returns phone object or empty list """
     def get(self, request, *args, **kwargs):
         queryset = Phone.objects.filter(mac=self.kwargs['mac'])
         raw_data = {};
@@ -104,7 +96,6 @@ class PhoneValidateJsonView(generic.View):
         return http.HttpResponse(json.dumps([( d['fields'] ) for d in raw_data]))
 
 class SessionDataJsonView(generic.View):
-    """ Returns session data as JSON string by ID """
     def date_handler(self, obj):
         return obj.isoformat() if hasattr(obj, 'isoformat') else obj
     def get(self, request, *args, **kwargs):
@@ -114,7 +105,6 @@ class SessionDataJsonView(generic.View):
         return http.HttpResponse(json.dumps([( d['fields'] ) for d in raw_data], default=self.date_handler))
 
 class SessionJsonView(generic.View):
-    """ Evaluates session by taxi and driver NFC token UUID and phone MAC address and returns object with session ID and AppConfig data """
     def date_handler(self, obj):
         return obj.isoformat() if hasattr(obj, 'isoformat') else obj
     def get(self, request, *args, **kwargs):
@@ -123,7 +113,7 @@ class SessionJsonView(generic.View):
         phone_mac_addr = self.kwargs['phone']
         session_id = 0
         try:
-            timeout = datetime.datetime.now() - datetime.timedelta(minutes=1)
+            timeout = datetime.datetime.now() - datetime.timedelta(seconds=AppConfig.objects.first().session_timeout))
             session_id = (Session.objects.filter(
                 taxi__token=taxi_token
             ).filter(
@@ -161,7 +151,6 @@ class SessionJsonView(generic.View):
         return http.HttpResponse(json.dumps(obj, default=self.date_handler))
 
 class DriverChangeView(generic.View):
-    """ Changes driver for the latest session of a taxi and returns either "OK" or "Fail" """
     def get(self, request, *args, **kwargs):
         try:
             taxi = Taxi.objects.filter(token=self.kwargs['taxi']).last()
@@ -176,7 +165,6 @@ class DriverChangeView(generic.View):
             return http.HttpResponse("Fail")
 
 class PathView(generic.View):
-    """ Returns JSON string of positions for a taxi to render a path on map """
     def date_handler(self, obj):
         return obj.isoformat() if hasattr(obj, 'isoformat') else obj
     def get(self, request, *args, **kwargs):
@@ -193,14 +181,12 @@ class PathView(generic.View):
             } for d in raw_data], default=self.date_handler))
 
 class PositionExportFilterView(generic.list.ListView):
-    """ Returns markup position export filter form """
     template_name = 'admin/position_export_filter.html'
     def get_queryset(self):
         queryset = Driver.objects.all()
         return queryset
 
 class DriverFilterView(generic.list.ListView):
-    """ Returns markup for driver filter form snippet """
     template_name = 'admin/driver_filter.html'
     def get_queryset(self):
         queryset = Session.objects.all().values('driver').distinct()
@@ -230,7 +216,6 @@ class DriverFilterView(generic.list.ListView):
         return queryset
 
 class TaxiFilterView(generic.list.ListView):
-    """ Returns markup for taxi filter form snippet """
     template_name = 'admin/taxi_filter.html'
     def get_queryset(self):
         queryset = Session.objects.all().values('taxi').distinct()
@@ -261,7 +246,6 @@ class TaxiFilterView(generic.list.ListView):
         return queryset
 
 class DateFilterView(generic.list.ListView):
-    """ Returns markup for date filter form snippet """
     template_name = 'admin/date_filter.html'
     def get_queryset(self):
         queryset = Taxi.objects.exclude(
@@ -270,7 +254,6 @@ class DateFilterView(generic.list.ListView):
         return queryset
 
 class PositionExportCsvView(generic.View):
-    """ Returns position export CSV file """
     def date_handler(self, obj):
         return obj.isoformat() if hasattr(obj, 'isoformat') else obj
     def reformat_date(self, date):
@@ -309,7 +292,7 @@ class PositionExportCsvView(generic.View):
             str(d.latitude) + ";" +
             str(d.longitude) + "\n" 
             ) for d in queryset]
-        position_list.insert(0, "Zeit;Fahrer;Fahrzeug;Telefon;Längengrad;Breitengrad\n".decode('utf-8'))
+        position_list.insert(0, "Time;Driver;Taxi;Phone;Latitude;Longitude\n".decode('utf-8'))
         response = http.HttpResponse(position_list, content_type="text/csv; charset=utf-8")
         response['Content-Disposition'] = 'attachment; filename="easycab-position-export.csv"'
         return response
