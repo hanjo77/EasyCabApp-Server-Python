@@ -15,6 +15,9 @@ from data.models import Taxi
 from data.models import Phone
 from data.models import Session
 from data.models import AppConfig
+from Crypto import Random
+from Crypto.Cipher import AES
+import base64
 
 logging.basicConfig(level=logging.INFO,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -48,7 +51,7 @@ class EasyCabListener(object):
 
     def on_message(self, client, userdata, msg):
         """ The callback for when a PUBLISH message is received from the server. """
-        data = json.loads(msg.payload)
+        data = json.loads(self.decrypt(msg.payload))
         try:
             session_id = data['session']
             position = Position(
@@ -64,7 +67,7 @@ class EasyCabListener(object):
             driver = '';
             if session.driver:
                  driver = session.driver.token
-            message = json.dumps({
+            message = self.encrypt(json.dumps({
                 'car': session.taxi.token,
                 'driver': driver,
                 'phone': session.phone.mac,
@@ -73,13 +76,35 @@ class EasyCabListener(object):
                     'longitude': position.longitude
                 },
                 'time': str(position.time.replace(microsecond=0))
-            })
+            }))
             client.publish('position', message, qos=0, retain=True)
             logging.info(message + " published to 'position'")
 
         except Exception, e:
             logging.error(data)
             logging.error(str(e))
+
+    def pad(self, data):
+        """ Adds padding characters for encryption """
+        length = 16 - (len(data) % 16)
+        return data + chr(length)*length
+
+    def unpad(self, data):
+        """ Removes added padding characters for decryption """
+        return data[:-ord(data[-1])]
+
+    def encrypt(self, message):
+        """ AES encrypts a string """
+        IV = Random.new().read(16)
+        aes = AES.new(AppConfig.objects.first().encryption_key, AES.MODE_CFB, IV, segment_size=128)
+        return base64.b64encode(IV + aes.encrypt(self.pad(message)))
+
+    def decrypt(self, encrypted):
+        """ Decrypts an AES encrypted string """
+        encrypted = base64.b64decode(encrypted)
+        IV = encrypted[:16]
+        aes = AES.new(AppConfig.objects.first().encryption_key, AES.MODE_CFB, IV, segment_size=128)
+        return self.unpad(aes.decrypt(encrypted[16:]))
 
 easyCabListener = EasyCabListener()
 easyCabListener.run()

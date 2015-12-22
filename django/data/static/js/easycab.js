@@ -48,7 +48,7 @@
 	};
 
 	this.client.onMessageArrived = function (message) {
-		var recievedmsg = message.payloadString;
+		var recievedmsg = easyCab.decrypt(message.payloadString);
 		var myObj = jQuery.parseJSON(recievedmsg);
 		if (myObj.disconnected) {
 			easyCab.removeMarker(myObj.disconnected);
@@ -660,6 +660,34 @@ EasyCab.prototype.getPhoneNumberFromMac = function(mac_addr) {
 		return this.database.phones[mac_addr].number;
 	}
 	return mac_addr;
+}
+
+/**
+ * AES String decryption
+ * @param {String} encrypted string
+ * @returns Decrypted string
+ * @type string
+ */
+EasyCab.prototype.decrypt = function(encrypted) {
+
+    var ciphertext = CryptoJS.enc.Base64.parse(encrypted);
+
+    // split iv and ciphertext
+    var iv = ciphertext.clone();
+    iv.sigBytes = 16;
+    iv.clamp();
+    ciphertext.words.splice(0, 4); // delete 4 words = 16 bytes
+    ciphertext.sigBytes -= 16;
+
+    var key = CryptoJS.enc.Utf8.parse(EasyCabUtil.config.encryption_key);
+
+    // decryption
+    var decrypted = CryptoJS.AES.decrypt({ciphertext: ciphertext}, key, {
+      iv: iv,
+      mode: CryptoJS.mode.CFB
+    });
+
+    return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
 // Instanciate EasyCab object
