@@ -5,6 +5,7 @@
  */
 
  var EasyCab = function() {
+ 	this.windowTopOffset = 0;
 	this.activeMarker = null;
 	this.markers = {};
 	this.goalMarker = {};
@@ -70,8 +71,13 @@
 			easyCab.updateSize();
 		});
 		$(document).scroll(function() {
+			var distance = $(document).scrollTop()-easyCab.windowTopOffset;
+			easyCab.windowTopOffset = $(document).scrollTop();
 			$("#map").css({
-				"top": $(document).scrollTop()+"px"
+				"top": (parseInt($("#map").css("top"), 10)+distance)+"px"
+			});
+			$("#routeWindow").css({
+				"top": (parseInt($("#routeWindow").css("top"), 10)+distance)+"px"
 			});
 		});
 	});
@@ -316,7 +322,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
 
-		if (!data.time || (new Date()-EasyCabUtil.parseDateTimeString(data.time) > EasyCabUtil.inactiveTimeout*1000)) {
+		if (!data.time || (new Date()-EasyCabUtil.parseDateTimeString(data.time) > EasyCabUtil.config.session_timeout*1000)) {
 			icon = new google.maps.MarkerImage(this.inactiveMarkerUrl + this.database.taxis[data.car],
 				   new google.maps.Size(120, 48), new google.maps.Point(0, 0),
 				   new google.maps.Point(60, 48));
@@ -399,7 +405,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	}
 	this.timeouts[data.car] = window.setTimeout(function() {
 		easyCab.removeMarker(data.car);
-	}, 15000);
+	}, EasyCabUtil.config.session_timeout*1000);
 	if (this.activeMarker) {
 		new google.maps.event.trigger(this.markers[this.activeMarker], 'click');
 	}

@@ -113,7 +113,7 @@ class SessionJsonView(generic.View):
         phone_mac_addr = self.kwargs['phone']
         session_id = 0
         try:
-            timeout = datetime.datetime.now() - datetime.timedelta(seconds=AppConfig.objects.first().session_timeout))
+            timeout = datetime.datetime.now() - datetime.timedelta(seconds=AppConfig.objects.first().session_timeout)
             session_id = (Session.objects.filter(
                 taxi__token=taxi_token
             ).filter(

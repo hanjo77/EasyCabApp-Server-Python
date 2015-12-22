@@ -4,13 +4,12 @@
  */
 
  var EasyCabUtil = {
-	// djangoRootPath: "http://46.101.17.239/data",
-	djangoRootPath: "http://localhost:8000",
-	// adminRootPath: "http://46.101.17.239/data/admin",
-	adminRootPath: "http://localhost:8000/admin",
+	djangoRootPath: "http://46.101.17.239/data",
+	// djangoRootPath: "http://localhost:8000",
+	adminRootPath: "http://46.101.17.239/data/admin",
+	// adminRootPath: "http://localhost:8000/admin",
 	mqttUrl: "46.101.17.239", // Host / IP for MQTT connection
 	mqttPort: 10001, // Port for MQTT connection
-	inactiveTimeout: 60, // Timeout in seconds after last measurement when taxi turns inactive
 	// Converts a UTC-Time string to format "DD.MM.YYYY HH:mm:ss"
 	formatDateTime: function(timeString) {
 		var date = this.parseDateTimeString(timeString);
@@ -57,3 +56,10 @@
 
 	}
 }
+
+$.ajax({
+	url: EasyCabUtil.djangoRootPath + "/app_config"
+})
+.done(function( data ) {
+	EasyCabUtil.config = $.parseJSON(data);
+});
