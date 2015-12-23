@@ -418,7 +418,7 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	this.timeouts[data.car] = window.setTimeout(function() {
 		easyCab.removeMarker(data.car);
 	}, EasyCabUtil.config.session_timeout*1000);
-	if (this.activeMarker && this.activeMarker == this.markers[data.car]) {
+	if (this.activeMarker && (this.activeMarker == data.car)) {
 		new google.maps.event.trigger(this.markers[this.activeMarker], 'click');
 	}
 	this.updateSize();
