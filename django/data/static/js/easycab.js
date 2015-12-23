@@ -419,7 +419,9 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 		easyCab.removeMarker(data.car);
 	}, EasyCabUtil.config.session_timeout*1000);
 	if (this.activeMarker && (this.activeMarker == data.car)) {
-		new google.maps.event.trigger(this.markers[this.activeMarker], 'click');
+		easyCab.map.setCenter(new google.maps.LatLng(
+			parseFloat($(".car" + easyCab.database.taxis[data.car] + " *[data-key='gps.latitude']").html()),
+			parseFloat($(".car" + easyCab.database.taxis[data.car] + " *[data-key='gps.longitude']").html())));
 	}
 	this.updateSize();
 };
@@ -613,13 +615,16 @@ EasyCab.prototype.updateSize = function() {
 	var mapPosY = 0;
 	if(mapHeight < mapWidth) {
 		mapWidth -= $("#menu").outerWidth();
+		mapPosY = $(window).scrollTop();
 	}
 	else {
 		mapHeight = mapWidth;
-		mapPosY = $("#menu").outerHeight();
+		mapPosY -= $("#menu").outerHeight();
 	}
 	if (easyCab.activeMarker) {
-		new google.maps.event.trigger(this.markers[this.activeMarker], 'click');
+		easyCab.map.setCenter(new google.maps.LatLng(
+			parseFloat($(".car" + easyCab.database.taxis[easyCab.activeMarker] + " *[data-key='gps.latitude']").html()),
+			parseFloat($(".car" + easyCab.database.taxis[easyCab.activeMarker] + " *[data-key='gps.longitude']").html())));
 	}
 	else {
 		easyCab.fitMapToMarkers();
