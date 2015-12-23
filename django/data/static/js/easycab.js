@@ -216,22 +216,28 @@ EasyCab.prototype.refreshAccordion = function(parentSelector) {
 	// MouseDown event for accordion headers (Click event is triggered too late, so MouseDown is required)
 	$("#accordion h3" + parentSelector).mousedown(function(event) {
 		var $target = $(event.target);
+		var targetId = $target.attr("data-key");
+		var targetName = $target.attr("data-name");
+		var $checkbox = $('div[data-key="' + easyCab.activeMarker + '"] input[type="checkbox"]')
+		if ($checkbox.is(':checked')) {
+			$checkbox.trigger("click");
+		}
 		var $container = $target.next();
 		if ($target.hasClass("ui-accordion-header-active")) {
 			// accordion item is active and will close, reset map and active marker
 			easyCab.activeMarker = null;
 			var $activeContainer = $container;
-			var $showPath = $activeContainer.find('.showPath input');
-			if ($showPath[0] && $showPath[0].checked) {
-				$showPath.trigger('click');
-			}
 			easyCab.fitMapToMarkers();
 		}
 		else {
 			// accordion item is not active and will open, trigger click on related marker
-			var targetId = $target.attr("data-key");
 			if (easyCab.markers[targetId]) {
-				new google.maps.event.trigger(easyCab.markers[targetId], 'click');
+				var index = Math.floor(parseInt($(".car" + targetName).attr("id").replace("ui-id-", ""), 10) / 2);
+				easyCab.map.setCenter(new google.maps.LatLng(
+					parseFloat($(".car" + targetName + " *[data-key='gps.latitude']").html()),
+					parseFloat($(".car" + targetName + " *[data-key='gps.longitude']").html())));
+				easyCab.map.setZoom(16);
+				easyCab.activeMarker = targetId;
 			}
 		}
 	});
@@ -301,6 +307,7 @@ EasyCab.prototype.filterView = function(value) {
 			}
 			break;
 	}
+	this.activeMarker = null;
     this.fitMapToMarkers();
 	$("#accordion").accordion("refresh");
 	$("#accordion").find("h3:visible").first().click();
@@ -350,22 +357,27 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 			var elem = $('#accordion').find('h3, div').sort(this.sortByTagAndClass);			
 
 			google.maps.event.addListener(marker, "click", function() {
+				var $checkbox = $('div[data-key="' + easyCab.activeMarker + '"] input[type="checkbox"]')
+				if ($checkbox.is(':checked')) {
+					$checkbox.trigger("click");
+				}
 				var index = Math.floor(parseInt($(".car" + easyCab.database.taxis[data.car]).attr("id").replace("ui-id-", ""), 10) / 2);
 				easyCab.map.setCenter(new google.maps.LatLng(
 					parseFloat($(".car" + easyCab.database.taxis[data.car] + " *[data-key='gps.latitude']").html()),
 					parseFloat($(".car" + easyCab.database.taxis[data.car] + " *[data-key='gps.longitude']").html())));
 				easyCab.map.setZoom(16);
 				easyCab.activeMarker = data.car;
+				$("#accordion").accordion('option', 'active', index);
 			});
 			this.markers[data.car] = marker;
 
 			this.updateSize();
+			this.refreshAccordion(".car" + this.database.taxis[data.car]);
+
 		}
 		this.markers[data.car].setPosition(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
 		this.markers[data.car].setIcon(icon);
 	}
-
-	this.fitMapToMarkers();
 
 	if (data.time && 
 		(new Date() - EasyCabUtil.parseDateTimeString(data.time) < 60000)) {
@@ -406,11 +418,10 @@ EasyCab.prototype.addMarker = function(lat, lng, info) {
 	this.timeouts[data.car] = window.setTimeout(function() {
 		easyCab.removeMarker(data.car);
 	}, EasyCabUtil.config.session_timeout*1000);
-	if (this.activeMarker) {
+	if (this.activeMarker && this.activeMarker == this.markers[data.car]) {
 		new google.maps.event.trigger(this.markers[this.activeMarker], 'click');
 	}
 	this.updateSize();
-	this.refreshAccordion(".car" + this.database.taxis[data.car]);
 };
 
 /**
