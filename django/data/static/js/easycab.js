@@ -308,7 +308,7 @@ EasyCab.prototype.filterView = function(value) {
 			break;
 	}
 	this.activeMarker = null;
-    this.fitMapToMarkers();
+    this.fitMapToMarkers(value);
 	$("#accordion").accordion("refresh");
 	$("#accordion").find("h3:visible").first().click();
 }
@@ -598,11 +598,30 @@ EasyCab.prototype.drawRoute = function(start, end, taxi) {
 /**
  * Positions and zooms map to fit to all visible markers
  */
-EasyCab.prototype.fitMapToMarkers = function() {
+EasyCab.prototype.fitMapToMarkers = function(value) {
 	var bounds = new google.maps.LatLngBounds();
-	for(i in this.markers) {
-		bounds.extend(this.markers[i].getPosition());
-	}
+	switch (value) {
+		case "showActive":
+			for(i in this.markers) {
+				if (this.markers[i].icon.url.indexOf("-active-") > -1) {
+					bounds.extend(this.markers[i].getPosition());
+				}
+			}
+			break;
+		case "showInactive":
+			for(i in this.markers) {
+				if (this.markers[i].icon.url.indexOf("-inactive-") > -1) {
+					bounds.extend(this.markers[i].getPosition());
+				}
+			}
+			break;
+		default:
+			for(i in this.markers) {
+				
+				bounds.extend(this.markers[i].getPosition());
+			}
+			break;
+	};
 	this.map.fitBounds(bounds);
 }
 
