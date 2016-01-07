@@ -333,7 +333,7 @@ h3.active.ui-accordion-header-active .ui-accordion-header-icon {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7de94', endColorstr='#f8d360',GradientType=0 ) /* IE6-9 */
 }
 
-#resetView {
+#adminLink {
 	position: absolute;
 	top: 0;
 	right: 0;

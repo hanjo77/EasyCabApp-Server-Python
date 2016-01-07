@@ -4,7 +4,11 @@
  * on Google Maps.
  */
 
- var EasyCab = function() {
+var EasyCab = function() {
+
+}
+
+EasyCab.prototype.init = function() {
  	this.windowTopOffset = 0;
 	this.activeMarker = null;
 	this.markers = {};
@@ -126,6 +130,7 @@ EasyCab.prototype.initMenu = function() {
 	$(".displayFilter").click(function(event) {
 		easyCab.filterView($(event.target).val());
 	});
+	$("#adminLink").attr("href", EasyCabUtil.djangoRootPath + "/admin");
 }
 
 /**
@@ -725,5 +730,18 @@ EasyCab.prototype.decrypt = function(encrypted) {
     return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
-// Instanciate EasyCab object
+/**
+ * Initializes the EasyCab object as soon as the EasyCabUtil object is loaded completely
+ */
+function startEasyCab() {
+    if(!EasyCabUtil.loaded) {
+        setTimeout(startEasyCab, 50);//wait 50 millisecnds then recheck
+        return;
+    }
+    easyCab.init();
+}
+
+// Instanciate and initialize EasyCab object
 var easyCab = new EasyCab();
+startEasyCab();
+

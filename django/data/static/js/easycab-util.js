@@ -54,7 +54,8 @@
 			}		    
 		});
 
-	}
+	},
+	loaded: false
 }
 
 $.ajax({
@@ -62,4 +63,5 @@ $.ajax({
 })
 .done(function( data ) {
 	EasyCabUtil.config = $.parseJSON(data);
+	EasyCabUtil.loaded = true;
 });
